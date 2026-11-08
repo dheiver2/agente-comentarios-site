@@ -1,0 +1,242 @@
+<!doctype html>
+<!-- Adaptado do template de dashboard do Tabler (tabler.io, MIT): navbar, page-header, row-cards, card-table. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance dos comentários</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css">
+<style>
+  :root { --tblr-primary: #E94A12; --tblr-primary-rgb: 233, 74, 18; --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; }
+  .texto-com { max-width: 520px; white-space: normal; font-size: .8125rem; color: var(--tblr-secondary); }
+  .rede-badge { min-width: 86px; }
+  .barra-limite { height: .4rem; }
+  .vazio { color: var(--tblr-secondary); font-size: .875rem; padding: 1.5rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+      <div class="navbar-brand pe-0 pe-md-3">
+        <span class="badge bg-primary me-2">&nbsp;</span>Agente de Comentários
+      </div>
+      <div class="navbar-nav flex-row order-md-last align-items-center gap-3">
+        <span id="janela" class="badge"></span>
+        <a href="/" class="btn btn-sm">Painel de operação</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="page-header d-print-none">
+      <div class="container-xl">
+        <div class="row g-2 align-items-center">
+          <div class="col">
+            <div class="page-pretitle">Autoridade em IA</div>
+            <h2 class="page-title">Performance</h2>
+          </div>
+          <div class="col-auto text-secondary small" id="atualizado"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="row row-deck row-cards">
+
+          <!-- KPIs -->
+          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Comentários publicados</div>
+            <div class="h1 mb-1" id="k-publicados">–</div>
+            <div class="text-secondary small"><span id="k-hoje">–</span> hoje · <span id="k-semana">–</span> em 7 dias</div>
+          </div></div></div>
+          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Conversas recebidas</div>
+            <div class="h1 mb-1" id="k-conversas">–</div>
+            <div class="text-secondary small"><span id="k-respondidas">–</span> respondidas pelo agente</div>
+          </div></div></div>
+          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Curtidas nos comentários</div>
+            <div class="h1 mb-1" id="k-curtidas">–</div>
+            <div class="text-secondary small"><span id="k-medidos">–</span> comentários já medidos</div>
+          </div></div></div>
+          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Aproveitamento do filtro</div>
+            <div class="h1 mb-1" id="k-aprov">–</div>
+            <div class="text-secondary small">nota média <span id="k-nota">–</span> · <span id="k-barrados">–</span> barrados</div>
+          </div></div></div>
+
+          <!-- publicados por dia -->
+          <div class="col-lg-8"><div class="card">
+            <div class="card-header"><h3 class="card-title">Publicados por dia e rede</h3></div>
+            <div class="card-body"><div id="g-dia" style="min-height:280px"></div></div>
+          </div></div>
+
+          <!-- limite do dia -->
+          <div class="col-lg-4"><div class="card">
+            <div class="card-header"><h3 class="card-title">Hoje × limite por rede</h3></div>
+            <div class="card-body" id="limites"></div>
+          </div></div>
+
+          <!-- seguidores -->
+          <div class="col-lg-6"><div class="card">
+            <div class="card-header"><h3 class="card-title">Seguidores</h3>
+              <div class="card-actions text-secondary small">medido 1× por dia · Reddit = karma</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Primeiro</th><th class="text-end">Hoje</th><th class="text-end">Variação</th></tr></thead>
+              <tbody id="t-seguidores"></tbody></table>
+            </div>
+          </div></div>
+
+          <!-- horário -->
+          <div class="col-lg-6"><div class="card">
+            <div class="card-header"><h3 class="card-title">Publicações por hora do dia</h3></div>
+            <div class="card-body"><div id="g-hora" style="min-height:220px"></div></div>
+          </div></div>
+
+          <!-- resultado por rede / estilo / origem -->
+          <div class="col-12"><div class="card">
+            <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs" id="abas">
+                <li class="nav-item"><a href="#" class="nav-link active" data-campo="rede">Por rede</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-campo="estilo">Por estilo</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-campo="origem">Turno × radar</a></li>
+              </ul>
+            </div>
+            <div class="card-table table-responsive">
+              <table class="table table-vcenter"><thead><tr><th>Grupo</th><th class="text-end">Publicados</th><th class="text-end">Medidos</th>
+                <th class="text-end">Curtidas</th><th class="text-end">Média</th><th class="text-end">Respostas</th><th class="text-end">% com resposta</th></tr></thead>
+              <tbody id="t-grupo"></tbody></table>
+            </div>
+          </div></div>
+
+          <!-- últimos -->
+          <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">Últimos comentários publicados</h3></div>
+            <div class="card-table table-responsive">
+              <table class="table table-vcenter card-table"><thead><tr><th>Quando</th><th>Rede</th><th>Comentário</th><th>Estilo</th>
+                <th class="text-end">Nota</th><th class="text-end">Curtidas</th><th class="text-end">Respostas</th></tr></thead>
+              <tbody id="t-ultimos"></tbody></table>
+            </div>
+          </div></div>
+
+        </div>
+      </div>
+    </div>
+    <footer class="footer footer-transparent d-print-none">
+      <div class="container-xl text-secondary small"><span id="rodape">Atualiza sozinho a cada 60 s · dados do banco local do agente</span></div>
+    </footer>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
+<script>
+const NOMES = {x: "X", linkedin: "LinkedIn", instagram: "Instagram", reddit: "Reddit", youtube: "YouTube",
+  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF"};
+const CORES = {x: "#1d273b", linkedin: "#0a66c2", instagram: "#d6249f", reddit: "#ff4500", youtube: "#e62117",
+  tiktok: "#00b8b0", facebook: "#1877f2", github: "#6e5494", huggingface: "#f5a623"};
+const nome = r => NOMES[r] || r;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const num = n => (n ?? 0).toLocaleString("pt-BR");
+const traco = v => v === null || v === undefined ? '<span class="text-secondary">–</span>' : num(v);
+const PUBLICO = !/^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+if (PUBLICO) document.querySelector('a[href="/"]').remove();
+let dados = null, gDia = null, gHora = null, campo = "rede";
+
+function kpis(k) {
+  const set = (id, v) => document.getElementById(id).textContent = v;
+  set("k-publicados", num(k.publicados)); set("k-hoje", num(k.hoje)); set("k-semana", num(k.semana));
+  set("k-conversas", num(k.conversas_recebidas)); set("k-respondidas", num(k.conversas_respondidas));
+  set("k-curtidas", num(k.curtidas)); set("k-medidos", num(k.medidos));
+  set("k-aprov", k.gerados ? Math.round(100 * k.publicados / k.gerados) + "%" : "–");
+  set("k-nota", k.nota_media ?? "–"); set("k-barrados", num(k.reprovados + k.ignorados));
+}
+
+function graficoDia(linhas) {
+  const dias = [...new Set(linhas.map(l => l.dia))];
+  const redes = [...new Set(linhas.map(l => l.rede))];
+  const series = redes.map(r => ({name: nome(r), data: dias.map(d => (linhas.find(l => l.dia === d && l.rede === r) || {}).n || 0)}));
+  const opt = {chart: {type: "bar", stacked: true, height: 280, toolbar: {show: false}, fontFamily: "inherit"},
+    series, colors: redes.map(r => CORES[r] || "#999"), plotOptions: {bar: {columnWidth: "45%"}}, dataLabels: {enabled: false},
+    xaxis: {categories: dias.map(d => d.slice(8, 10) + "/" + d.slice(5, 7))}, legend: {position: "bottom"},
+    grid: {strokeDashArray: 4}, yaxis: {labels: {formatter: v => Math.round(v)}}};
+  if (gDia) gDia.updateOptions(opt); else (gDia = new ApexCharts(document.getElementById("g-dia"), opt)).render();
+}
+
+function graficoHora(linhas) {
+  const horas = Array.from({length: 15}, (_, i) => i + 7);
+  const opt = {chart: {type: "bar", height: 220, toolbar: {show: false}, fontFamily: "inherit"}, colors: ["#E94A12"],
+    series: [{name: "Publicados", data: horas.map(h => (linhas.find(l => l.hora === h) || {}).n || 0)}],
+    xaxis: {categories: horas.map(h => h + "h")}, dataLabels: {enabled: false}, grid: {strokeDashArray: 4},
+    plotOptions: {bar: {columnWidth: "55%", borderRadius: 2}}, yaxis: {labels: {formatter: v => Math.round(v)}}};
+  if (gHora) gHora.updateOptions(opt); else (gHora = new ApexCharts(document.getElementById("g-hora"), opt)).render();
+}
+
+function limites(l) {
+  document.getElementById("limites").innerHTML = Object.entries(l).map(([r, v]) => {
+    const pct = v.dia ? Math.min(100, Math.round(100 * v.hoje / v.dia)) : 0;
+    const pausa = v.pausada_ate ? `<span class="badge bg-warning-lt ms-1">pausada até ${new Date(v.pausada_ate * 1000).toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"})}</span>` : "";
+    return `<div class="mb-3"><div class="d-flex mb-1"><div>${nome(r)}${pausa}</div><div class="ms-auto text-secondary">${v.hoje}/${v.dia}</div></div>
+      <div class="progress barra-limite"><div class="progress-bar ${pct >= 100 ? "bg-secondary" : ""}" style="width:${pct}%;${pct < 100 ? "background:" + (CORES[r] || "#E94A12") : ""}"></div></div></div>`;
+  }).join("");
+}
+
+function seguidores(s) {
+  const por = {};
+  s.forEach(l => (por[l.rede] = por[l.rede] || []).push(l));
+  const linhas = Object.entries(por).map(([r, v]) => {
+    const a = v[0].valor, b = v[v.length - 1].valor, d = b - a;
+    const cls = d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary";
+    return `<tr><td>${nome(r)}</td><td class="text-end">${num(a)}<div class="text-secondary small">${v[0].dia.slice(8, 10)}/${v[0].dia.slice(5, 7)}</div></td>
+      <td class="text-end">${num(b)}</td><td class="text-end ${cls}">${d > 0 ? "+" : ""}${num(d)}</td></tr>`;
+  });
+  document.getElementById("t-seguidores").innerHTML = linhas.join("") || '<tr><td colspan="4" class="vazio">Ainda sem medição.</td></tr>';
+}
+
+function grupo() {
+  const linhas = dados[campo] || [];
+  document.getElementById("t-grupo").innerHTML = linhas.map(g => `<tr>
+    <td>${esc(campo === "rede" ? nome(g.grupo) : g.grupo)}</td><td class="text-end">${num(g.publicados)}</td><td class="text-end">${num(g.medidos)}</td>
+    <td class="text-end">${num(g.curtidas)}</td><td class="text-end">${traco(g.curtidas_media)}</td><td class="text-end">${num(g.respostas)}</td>
+    <td class="text-end">${g.taxa_resposta === null ? '<span class="text-secondary">–</span>' : g.taxa_resposta + "%"}</td></tr>`).join("")
+    || '<tr><td colspan="7" class="vazio">Nada publicado ainda.</td></tr>';
+}
+
+function ultimos(l) {
+  document.getElementById("t-ultimos").innerHTML = l.map(i => {
+    const d = new Date(i.publicado * 1000);
+    const quando = d.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
+    const conversa = i.tipo === "resposta" ? '<span class="badge bg-azure-lt ms-1">conversa</span>' : "";
+    return `<tr><td class="text-nowrap text-secondary">${quando}</td>
+      <td><span class="badge rede-badge text-white" style="background:${CORES[i.rede] || "#999"}">${nome(i.rede)}</span>${conversa}</td>
+      <td>${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener" class="texto-com d-block text-reset">${esc(i.texto)}</a>` : `<span class="texto-com d-block">${esc(i.texto)}</span>`}</td>
+      <td class="text-secondary">${esc(i.estilo || "–")}</td><td class="text-end">${traco(i.nota)}</td>
+      <td class="text-end">${traco(i.curtidas)}</td><td class="text-end">${traco(i.respostas)}</td></tr>`;
+  }).join("") || '<tr><td colspan="7" class="vazio">Nada publicado ainda.</td></tr>';
+}
+
+async function carregar() {
+  try {
+    dados = await (await fetch(PUBLICO ? "dados.json?" + Date.now() : "/api/performance")).json();
+  } catch (e) { document.getElementById("atualizado").textContent = "agente fora do ar"; return; }
+  kpis(dados.kpi); graficoDia(dados.por_dia); graficoHora(dados.por_hora); limites(dados.limites);
+  seguidores(dados.seguidores); grupo(); ultimos(dados.ultimos);
+  const j = document.getElementById("janela");
+  j.className = "badge " + (dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
+  j.textContent = (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
+  const t = new Date(PUBLICO ? dados.agora * 1000 : Date.now());
+  document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
+}
+
+document.getElementById("abas").addEventListener("click", e => {
+  const a = e.target.closest("[data-campo]"); if (!a) return; e.preventDefault();
+  document.querySelectorAll("#abas .nav-link").forEach(x => x.classList.toggle("active", x === a));
+  campo = a.dataset.campo; grupo();
+});
+if (PUBLICO) document.getElementById("rodape").textContent = "Números reais do agente, publicados 1× por dia · sem links nem contas";
+carregar(); setInterval(carregar, 60000);
+</script>
+</body>
+</html>
