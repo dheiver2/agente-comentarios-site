@@ -225,7 +225,8 @@ async function carregar() {
   seguidores(dados.seguidores); grupo(); ultimos(dados.ultimos);
   const j = document.getElementById("janela");
   j.className = "badge " + (dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
-  j.textContent = (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
+  j.textContent = PUBLICO ? `publica das ${dados.janela[0]} às ${dados.janela[1]}` : (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
+  if (PUBLICO) j.className = "badge bg-primary-lt";
   const t = new Date(PUBLICO ? dados.agora * 1000 : Date.now());
   document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
 }
