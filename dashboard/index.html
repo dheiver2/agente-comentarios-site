@@ -233,6 +233,7 @@ async function carregar() {
   j.className = "badge " + (dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
   j.textContent = PUBLICO ? `publica das ${dados.janela[0]} às ${dados.janela[1]}` : (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
   if (PUBLICO) j.className = "badge bg-primary-lt";
+  if (!PUBLICO && dados.llm && !dados.llm.ok) { j.className = "badge bg-red-lt"; j.textContent = "parado · LLM fora do ar"; }
   const t = new Date(PUBLICO ? dados.agora * 1000 : Date.now());
   document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
 }
