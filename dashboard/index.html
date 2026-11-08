@@ -43,6 +43,9 @@
 
     <div class="page-body">
       <div class="container-xl">
+        <div id="alerta-llm" class="alert alert-danger d-none" role="alert">
+          <b>Mangaba Router fora do ar</b>: o agente parou de escrever e comentar até ele voltar (<span></span>).
+        </div>
         <div class="row row-deck row-cards">
 
           <!-- KPIs -->
@@ -75,7 +78,7 @@
 
           <!-- limite do dia -->
           <div class="col-lg-4"><div class="card">
-            <div class="card-header"><h3 class="card-title">Hoje × limite por rede</h3></div>
+            <div class="card-header"><h3 class="card-title">Últimas 24 h × limite por rede</h3></div>
             <div class="card-body" id="limites"></div>
           </div></div>
 
@@ -224,6 +227,9 @@ async function carregar() {
   kpis(dados.kpi); graficoDia(dados.por_dia); graficoHora(dados.por_hora); limites(dados.limites);
   seguidores(dados.seguidores); grupo(); ultimos(dados.ultimos);
   const j = document.getElementById("janela");
+  const al = document.getElementById("alerta-llm");
+  if (dados.llm && !dados.llm.ok) { al.classList.remove("d-none"); al.querySelector("span").textContent = dados.llm.detalhe.slice(0, 60); }
+  else al.classList.add("d-none");
   j.className = "badge " + (dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
   j.textContent = PUBLICO ? `publica das ${dados.janela[0]} às ${dados.janela[1]}` : (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
   if (PUBLICO) j.className = "badge bg-primary-lt";
