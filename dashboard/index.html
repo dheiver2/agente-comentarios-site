@@ -31,6 +31,15 @@
   th.ord.asc::after { content: " ↑"; opacity: 1; }
   th.ord.desc::after { content: " ↓"; opacity: 1; }
   .spark { display: block; }
+  .fluxo { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.25rem; }
+  .passo { position: relative; border: 1px solid var(--tblr-border-color); border-radius: 8px; padding: .75rem .85rem; background: var(--tblr-bg-surface); }
+  .passo:not(:last-child)::after { content: "→"; position: absolute; right: -1.05rem; top: 50%; transform: translateY(-50%); color: var(--tblr-secondary); font-weight: 600; }
+  .passo .n { display: inline-flex; width: 1.4rem; height: 1.4rem; border-radius: 50%; align-items: center; justify-content: center;
+    background: rgba(var(--tblr-primary-rgb), .12); color: var(--tblr-primary); font-size: .75rem; font-weight: 700; margin-right: .35rem; }
+  .passo b { font-size: .875rem; } .passo p { margin: .35rem 0 0; font-size: .78rem; color: var(--tblr-secondary); line-height: 1.35; }
+  .sobre-lista { margin: 0; padding-left: 1rem; font-size: .8rem; line-height: 1.45; } .sobre-lista li { margin-bottom: .25rem; }
+  .sobre-lista b { font-weight: 600; }
+  @media (max-width: 991px) { .fluxo { grid-template-columns: repeat(2, 1fr); } .passo::after { display: none; } }
   @media (max-width: 767px) { .filtros { position: static; } }
 </style>
 </head>
@@ -67,6 +76,7 @@
               <li class="nav-item"><a class="nav-link" href="#" data-pg="alvos" role="tab">Alvos</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="resultados" role="tab">Resultados</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="itens" role="tab">Itens <span class="badge bg-secondary-lt ms-1" id="pg-itens-n"></span></a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="sobre" role="tab">Como funciona</a></li>
               <li class="nav-item d-none" id="pg-pautas-item"><a class="nav-link" href="#" data-pg="pautas" role="tab">Pautas</a></li>
             </ul>
           </div>
@@ -192,6 +202,68 @@
             </div>
           </div></div>
 
+          <!-- como funciona (explicação da solução) -->
+          <div class="col-12"><div class="card" id="s-fluxo">
+            <div class="card-header"><h3 class="card-title">Ágora: presença técnica em IA nas 9 redes, no piloto automático</h3>
+              <div class="card-actions text-secondary small">X · LinkedIn · Instagram · TikTok · YouTube · Facebook · Reddit · GitHub · fórum Hugging Face</div></div>
+            <div class="card-body">
+              <p class="text-secondary mb-3" style="font-size:.85rem">O objetivo é ser percebido como autoridade em IA pelo conteúdo: comentários técnicos, úteis e verificados,
+                nos posts certos, todos os dias, sem nada passar por aprovação manual. Cada comentário segue o mesmo caminho:</p>
+              <div class="fluxo">
+                <div class="passo"><span class="n">1</span><b>Encontrar</b><p>Busca posts de IA em cada rede (termos, perfis, hashtags) e um radar a cada 30 min pega os que estão subindo agora.</p></div>
+                <div class="passo"><span class="n">2</span><b>Avaliar</b><p>O Brier (modelo calibrado) dá nota: é sobre IA? vale comentar? é relevante? é isca? Só passa nota ≥ 70.</p></div>
+                <div class="passo"><span class="n">3</span><b>Priorizar</b><p>Na frente: post com tração e autor grande (lê os seguidores). Post pouco relevante perde pontos.</p></div>
+                <div class="passo"><span class="n">4</span><b>Escrever</b><p>3 versões em ângulos de especialista (mecanismo, posição, correção); o Brier escolhe a melhor.</p></div>
+                <div class="passo"><span class="n">5</span><b>Verificar</b><p>Regras de estilo → fatos checados na web → Brier (pertinente, seguro, autoridade, humano) → revisor.</p></div>
+                <div class="passo"><span class="n">6</span><b>Publicar e medir</b><p>Sai com @ do autor, no ritmo de cada rede. Depois mede curtidas, respostas e seguidores e ajusta sozinho.</p></div>
+              </div>
+            </div>
+          </div></div>
+          <div class="col-md-6 col-lg-3"><div class="card" id="s-papeis">
+            <div class="card-header"><h3 class="card-title">Os papéis (mesma conta)</h3></div>
+            <div class="card-body"><ul class="sobre-lista">
+              <li><b>Comentarista</b>: 3 turnos por dia nas 9 redes.</li>
+              <li><b>Radar</b>: chega cedo nos posts que estão subindo.</li>
+              <li><b>Conversador</b>: responde quem respondeu (até 2 vezes por fio).</li>
+              <li><b>Especialista</b>: perguntas sem resposta no GitHub e no fórum HF.</li>
+              <li><b>Relacionamento</b>: DM curta para quem conversou de verdade (máx. 3/dia).</li>
+              <li><b>Autor</b>: posts próprios no LinkedIn, X e Facebook; vídeos no TikTok.</li>
+              <li><b>Analista</b>: métricas, pautas e o autoajuste por rede e estilo.</li>
+            </ul></div>
+          </div></div>
+          <div class="col-md-6 col-lg-3"><div class="card" id="s-protecoes">
+            <div class="card-header"><h3 class="card-title">Proteções</h3></div>
+            <div class="card-body"><ul class="sobre-lista">
+              <li><b>Ritmo humano</b>: limite por hora e por dia em cada rede, intervalo entre envios, janela das 07h às 21h.</li>
+              <li><b>1 comentário por post</b> e 1 por perfil por dia.</li>
+              <li><b>Guarda de seguidores</b>: se uma rede perde seguidores, freia nela por 72 h.</li>
+              <li><b>Aviso da rede</b> (limite, bloqueio, captcha): pausa a rede, não insiste.</li>
+              <li><b>Marcação certa</b>: o @ só sai se o nome bater exatamente; nunca marca outra pessoa.</li>
+              <li><b>Contas reais</b>, nunca falsas; nenhuma senha digitada pelo agente.</li>
+            </ul></div>
+          </div></div>
+          <div class="col-md-6 col-lg-3"><div class="card" id="s-numeros">
+            <div class="card-header"><h3 class="card-title">Como ler os números</h3></div>
+            <div class="card-body"><ul class="sobre-lista">
+              <li><b>Engajamento</b>: curtidas + respostas que os comentários receberam.</li>
+              <li><b>Com resposta</b>: % dos comentários medidos que viraram conversa.</li>
+              <li><b>Aprovados no filtro</b>: % dos rascunhos que passaram na verificação.</li>
+              <li><b>Alvos de qualidade</b>: comentário em post relevante, visível e de autor com 10 mil+ seguidores.</li>
+              <li><b>Seguidores</b>: medidos 1× por dia (Reddit = karma, Facebook = amigos).</li>
+              <li><b>Freio</b> e <b>pausada</b> no limite: a rede está em descanso.</li>
+            </ul></div>
+          </div></div>
+          <div class="col-md-6 col-lg-3"><div class="card" id="s-tecnica">
+            <div class="card-header"><h3 class="card-title">Por baixo</h3></div>
+            <div class="card-body"><ul class="sobre-lista">
+              <li><b>Navegador próprio</b> e invisível: não mexe no seu Chrome nem nas suas janelas.</li>
+              <li><b>Sessões</b>: a extensão entrega só os logins das 9 redes, só neste Mac.</li>
+              <li><b>Leituras em paralelo</b>; publicações uma por vez.</li>
+              <li><b>Modelos de IA</b> próprios: escrita, nota calibrada (Brier) e revisor técnico.</li>
+              <li><b>Dashboard</b> com números reais, sem links nem contas na versão pública.</li>
+            </ul></div>
+          </div></div>
+
           <!-- qualidade dos alvos -->
           <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Onde a voz está aparecendo</h3>
@@ -291,9 +363,9 @@ let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", 
 let POR_PAGINA = 10;
 // ---------- páginas (cada uma cabe na tela, sem rolar) ----------
 const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-seguidores"],
-  alvos: ["a-resumo", "t-alvos", "t-maiores"],
+  alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
   resultados: ["g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
-const ROTULOS = {geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
+const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
   const linha = document.querySelector(".row-cards");
@@ -312,6 +384,7 @@ function mostrarPagina() {
   document.querySelectorAll(".row-cards > [data-pg]").forEach(c => c.classList.toggle("d-none", c.dataset.pg !== pg));
   document.querySelectorAll("#paginas [data-pg]").forEach(a => { const on = a.dataset.pg === pg; a.classList.toggle("active", on); a.setAttribute("aria-selected", on); });
   document.getElementById("titulo-pagina").textContent = ROTULOS[pg];
+  document.querySelector(".filtros").classList.toggle("d-none", pg === "sobre");  // a explicação não depende de filtro
   scrollTo(0, 0);
   dispatchEvent(new Event("resize"));  // gráficos que estavam escondidos se redesenham com a largura certa
   if (pg === "itens" && dados) encaixar();
