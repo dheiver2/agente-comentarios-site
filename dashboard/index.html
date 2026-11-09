@@ -282,7 +282,7 @@
             </div>
           </div></div>
           <div class="col-lg-5"><div class="card">
-            <div class="card-header"><h3 class="card-title">Maiores perfis comentados</h3><div class="card-actions text-secondary small">só pessoas · referências de IA no Brasil primeiro</div></div>
+            <div class="card-header"><h3 class="card-title">Maiores perfis comentados</h3><div class="card-actions text-secondary small" id="t-maiores-nota">só pessoas · em negrito, referências de IA no Brasil</div></div>
             <div class="card-table table-responsive">
               <table class="table table-sm table-vcenter"><thead><tr><th>Autor</th><th class="text-end">Seguidores</th><th class="text-end">Interações do post</th></tr></thead>
               <tbody id="t-maiores"></tbody></table>
@@ -592,9 +592,11 @@ function alvos(l) {
       <td class="text-end">${compacto(mediana(g.map(i => i.post_interacoes)))}</td><td class="text-end">${compacto(mediana(g.map(i => i.autor_seguidores)))}</td></tr>`;
   }).join("") || '<tr><td colspan="7" class="vazio">Nenhum comentário com esses filtros.</td></tr>';
   // só pessoas (empresas e veículos ficam fora); célebres de IA no Brasil primeiro, depois por seguidores
-  const maiores = com.filter(i => i.autor_tipo !== "empresa" && (i.autor_seguidores || i.autor_celebre))
+  const maiores = com.filter(i => i.autor_tipo !== "empresa" && i.rede !== "reddit" && (i.autor_seguidores || i.autor_celebre))
     .sort((a, b) => (!!b.autor_celebre - !!a.autor_celebre) || (b.autor_seguidores || 0) - (a.autor_seguidores || 0))
     .filter((i, k, arr) => !i.autor_celebre || arr.findIndex(j => j.autor_celebre === i.autor_celebre) === k).slice(0, 8);
+  const refs = new Set(com.filter(i => i.autor_celebre).map(i => i.autor_celebre));
+  document.getElementById("t-maiores-nota").textContent = `só pessoas · ${refs.size} ${refs.size === 1 ? "referência" : "referências"} de IA no Brasil comentadas (em negrito)`;
   document.getElementById("t-maiores").innerHTML = maiores.map(i => `<tr><td class="text-nowrap">${ponto(i.rede)}${i.autor_celebre ? '<strong>' + esc(i.autor_celebre) + '</strong>' : i.autor ? esc(i.autor) : nome(i.rede)}</td>
     <td class="text-end">${compacto(i.autor_seguidores)}</td><td class="text-end">${compacto(i.post_views || i.post_interacoes)}</td></tr>`).join("")
     || '<tr><td colspan="3" class="vazio">Ainda lendo os perfis dos autores.</td></tr>';
