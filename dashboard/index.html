@@ -4,14 +4,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Performance dos comentários</title>
+<title>Ágora · Performance</title>
+<script>  // tema antes de pintar: segue o sistema
+  document.documentElement.setAttribute("data-bs-theme", matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css">
 <style>
   :root { --tblr-primary: #E94A12; --tblr-primary-rgb: 233, 74, 18; --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; }
-  .texto-com { max-width: 520px; white-space: normal; font-size: .8125rem; color: var(--tblr-secondary); }
+  body { font-feature-settings: "tnum"; }
+  .texto-com { max-width: 560px; white-space: normal; font-size: .8125rem; color: var(--tblr-secondary); }
   .rede-badge { min-width: 86px; }
   .barra-limite { height: .4rem; }
   .vazio { color: var(--tblr-secondary); font-size: .875rem; padding: 1.5rem; text-align: center; }
+  .filtros { position: sticky; top: 0; z-index: 20; background: var(--tblr-body-bg); border-bottom: 1px solid var(--tblr-border-color); padding: .75rem 0; }
+  .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .6rem; border-radius: 999px; font-size: .8125rem;
+    border: 1px solid var(--tblr-border-color); background: var(--tblr-bg-surface); color: var(--tblr-body-color); cursor: pointer; user-select: none; }
+  .chip.off { opacity: .45; }
+  .chip:focus-visible { outline: 2px solid var(--tblr-primary); outline-offset: 2px; }
+  .ponto { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; flex: none; }
+  .kpi-delta { font-size: .8125rem; font-weight: 500; white-space: nowrap; }
+  th.ord { cursor: pointer; white-space: nowrap; }
+  th.ord::after { content: " ↕"; opacity: .35; }
+  th.ord.asc::after { content: " ↑"; opacity: 1; }
+  th.ord.desc::after { content: " ↓"; opacity: 1; }
+  .spark { display: block; }
+  @media (max-width: 767px) { .filtros { position: static; } }
 </style>
 </head>
 <body>
@@ -19,11 +36,11 @@
   <header class="navbar navbar-expand-md d-print-none">
     <div class="container-xl">
       <div class="navbar-brand pe-0 pe-md-3">
-        <span class="badge bg-primary me-2">&nbsp;</span>Agente de Comentários
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="22" height="22" class="me-2" aria-hidden="true"><rect width="128" height="128" rx="28" fill="#E94A12"/><path d="M41 28h46a15 15 0 0 1 15 15v26a15 15 0 0 1-15 15H59L36 102l3-18a15 15 0 0 1-13-15V43a15 15 0 0 1 15-15z" fill="#fff"/><circle cx="45" cy="56" r="6.6" fill="#E94A12"/><circle cx="64" cy="56" r="6.6" fill="#E94A12"/><circle cx="83" cy="56" r="6.6" fill="#E94A12"/></svg>Ágora
       </div>
-      <div class="navbar-nav flex-row order-md-last align-items-center gap-3">
+      <div class="navbar-nav flex-row order-md-last align-items-center gap-2">
         <span id="janela" class="badge"></span>
-        <a href="/" class="btn btn-sm">Painel de operação</a>
+        <a href="/" class="btn btn-sm" id="link-painel">Painel de operação</a>
       </div>
     </div>
   </header>
@@ -33,10 +50,50 @@
       <div class="container-xl">
         <div class="row g-2 align-items-center">
           <div class="col">
-            <div class="page-pretitle">Autoridade em IA</div>
+            <div class="page-pretitle">Autoridade em IA · 9 redes</div>
             <h2 class="page-title">Performance</h2>
           </div>
-          <div class="col-auto text-secondary small" id="atualizado"></div>
+          <div class="col-auto d-flex align-items-center gap-2">
+            <span class="text-secondary small" id="atualizado"></span>
+            <button class="btn btn-sm" id="exportar" title="Baixar os itens filtrados em CSV">Exportar CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- filtros -->
+    <div class="filtros d-print-none">
+      <div class="container-xl">
+        <div class="row g-2 align-items-center">
+          <div class="col-12 col-lg-auto">
+            <div class="btn-group w-100" role="group" aria-label="Período" id="periodo">
+              <button type="button" class="btn btn-sm" data-p="1">Hoje</button>
+              <button type="button" class="btn btn-sm" data-p="7">7 dias</button>
+              <button type="button" class="btn btn-sm" data-p="30">30 dias</button>
+              <button type="button" class="btn btn-sm" data-p="90">90 dias</button>
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-lg-2">
+            <select class="form-select form-select-sm" id="f-tipo" aria-label="Tipo">
+              <option value="">Todos os tipos</option><option value="terceiro">Comentários</option><option value="resposta">Conversas</option>
+              <option value="post">Posts próprios</option><option value="video">Vídeos</option><option value="dm">DMs</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-lg-2">
+            <select class="form-select form-select-sm" id="f-origem" aria-label="Origem">
+              <option value="">Toda origem</option><option value="turno">Turno</option><option value="radar">Radar</option><option value="conversa">Conversa</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-lg-2">
+            <select class="form-select form-select-sm" id="f-status" aria-label="Status">
+              <option value="publicado">Publicados</option><option value="">Todos os status</option><option value="pendente">Na fila</option>
+              <option value="reprovado">Reprovados</option><option value="ignorado">Descartados</option><option value="erro">Com erro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3 col-lg">
+            <input type="search" class="form-control form-control-sm" id="f-busca" placeholder="Buscar no texto…" aria-label="Buscar no texto">
+          </div>
+          <div class="col-12 d-flex flex-wrap gap-2 align-items-center" id="f-redes"></div>
         </div>
       </div>
     </div>
@@ -44,72 +101,75 @@
     <div class="page-body">
       <div class="container-xl">
         <div id="alerta-llm" class="alert alert-danger d-none" role="alert">
-          <b>Mangaba Router fora do ar</b>: o agente parou de escrever e comentar até ele voltar (<span></span>).
+          <b>Roteador de IA fora do ar</b>: o agente parou de escrever e comentar até ele voltar (<span></span>).
         </div>
         <div class="row row-deck row-cards">
 
-          <!-- KPIs -->
-          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
-            <div class="subheader">Comentários publicados</div>
-            <div class="h1 mb-1" id="k-publicados">–</div>
-            <div class="text-secondary small"><span id="k-hoje">–</span> hoje · <span id="k-semana">–</span> em 7 dias</div>
+          <!-- KPIs: seguem os filtros; a seta compara com o período anterior de mesmo tamanho -->
+          <div class="col-6 col-lg"><div class="card"><div class="card-body">
+            <div class="subheader">Publicados</div>
+            <div class="d-flex align-items-baseline"><div class="h1 mb-0 me-2" id="k-pub">–</div><div class="kpi-delta ms-auto" id="d-pub"></div></div>
+            <div class="text-secondary small mt-1" id="k-pub-sub">–</div>
           </div></div></div>
-          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
-            <div class="subheader">Conversas recebidas</div>
-            <div class="h1 mb-1" id="k-conversas">–</div>
-            <div class="text-secondary small"><span id="k-respondidas">–</span> respondidas pelo agente</div>
+          <div class="col-6 col-lg"><div class="card"><div class="card-body">
+            <div class="subheader">Engajamento</div>
+            <div class="d-flex align-items-baseline"><div class="h1 mb-0 me-2" id="k-eng">–</div><div class="kpi-delta ms-auto" id="d-eng"></div></div>
+            <div class="text-secondary small mt-1" id="k-eng-sub">–</div>
           </div></div></div>
-          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
-            <div class="subheader">Curtidas nos comentários</div>
-            <div class="h1 mb-1" id="k-curtidas">–</div>
-            <div class="text-secondary small"><span id="k-medidos">–</span> comentários já medidos</div>
+          <div class="col-6 col-lg"><div class="card"><div class="card-body">
+            <div class="subheader">Com resposta</div>
+            <div class="d-flex align-items-baseline"><div class="h1 mb-0 me-2" id="k-taxa">–</div><div class="kpi-delta ms-auto" id="d-taxa"></div></div>
+            <div class="text-secondary small mt-1">dos comentários já medidos</div>
           </div></div></div>
-          <div class="col-sm-6 col-lg-3"><div class="card"><div class="card-body">
-            <div class="subheader">Aproveitamento do filtro</div>
-            <div class="h1 mb-1" id="k-aprov">–</div>
-            <div class="text-secondary small">nota média <span id="k-nota">–</span> · <span id="k-barrados">–</span> barrados</div>
+          <div class="col-6 col-lg"><div class="card"><div class="card-body">
+            <div class="subheader">Aprovados no filtro</div>
+            <div class="d-flex align-items-baseline"><div class="h1 mb-0 me-2" id="k-aprov">–</div><div class="kpi-delta ms-auto" id="d-aprov"></div></div>
+            <div class="text-secondary small mt-1" id="k-aprov-sub">–</div>
           </div></div></div>
+          <div class="col-12 col-lg"><div class="card"><div class="card-body">
+            <div class="subheader">Seguidores (saldo)</div>
+            <div class="h1 mb-0" id="k-seg">–</div>
+            <div class="text-secondary small mt-1" id="k-seg-sub">–</div>
+          </div></div></div>
+          <div class="w-100 m-0 p-0"></div>
 
-          <!-- publicados por dia -->
           <div class="col-lg-8"><div class="card">
             <div class="card-header"><h3 class="card-title">Publicados por dia e rede</h3></div>
             <div class="card-body"><div id="g-dia" style="min-height:280px"></div></div>
           </div></div>
 
-          <!-- limite do dia -->
           <div class="col-lg-4"><div class="card">
-            <div class="card-header"><h3 class="card-title">Últimas 24 h × limite por rede</h3></div>
+            <div class="card-header"><h3 class="card-title">Últimas 24 h × limite</h3></div>
             <div class="card-body" id="limites"></div>
           </div></div>
 
-          <!-- seguidores -->
-          <div class="col-lg-6"><div class="card">
-            <div class="card-header"><h3 class="card-title">Seguidores</h3>
-              <div class="card-actions text-secondary small">medido 1× por dia · Reddit = karma</div></div>
+          <div class="col-lg-7"><div class="card">
+            <div class="card-header"><h3 class="card-title">Seguidores no período</h3>
+              <div class="card-actions text-secondary small">1× por dia · Reddit = karma · Facebook = amigos</div></div>
             <div class="card-table table-responsive">
-              <table class="table table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Primeiro</th><th class="text-end">Hoje</th><th class="text-end">Variação</th></tr></thead>
+              <table class="table table-vcenter"><thead><tr><th>Rede</th><th>Tendência</th><th class="text-end">Início</th><th class="text-end">Hoje</th><th class="text-end">Saldo</th></tr></thead>
               <tbody id="t-seguidores"></tbody></table>
             </div>
           </div></div>
 
-          <!-- horário -->
-          <div class="col-lg-6"><div class="card">
-            <div class="card-header"><h3 class="card-title">Publicações por hora do dia</h3></div>
-            <div class="card-body"><div id="g-hora" style="min-height:220px"></div></div>
+          <div class="col-lg-5"><div class="card">
+            <div class="card-header"><h3 class="card-title">Por hora do dia</h3>
+              <div class="card-actions text-secondary small">barras = publicados · linha = engajamento médio</div></div>
+            <div class="card-body"><div id="g-hora" style="min-height:240px"></div></div>
           </div></div>
 
-          <!-- resultado por rede / estilo / origem -->
           <div class="col-12"><div class="card">
             <div class="card-header">
               <ul class="nav nav-tabs card-header-tabs" id="abas">
                 <li class="nav-item"><a href="#" class="nav-link active" data-campo="rede">Por rede</a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-campo="estilo">Por estilo</a></li>
-                <li class="nav-item"><a href="#" class="nav-link" data-campo="origem">Turno × radar</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-campo="origem">Por origem</a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-campo="tipo">Por tipo</a></li>
               </ul>
             </div>
             <div class="card-table table-responsive">
               <table class="table table-vcenter"><thead><tr><th>Grupo</th><th class="text-end">Publicados</th><th class="text-end">Medidos</th>
-                <th class="text-end">Curtidas</th><th class="text-end">Média</th><th class="text-end">Respostas</th><th class="text-end">% com resposta</th></tr></thead>
+                <th class="text-end">Curtidas</th><th class="text-end">Média</th><th class="text-end">Respostas</th><th class="text-end">% com resposta</th><th class="text-end">Nota média</th></tr></thead>
               <tbody id="t-grupo"></tbody></table>
             </div>
           </div></div>
@@ -121,13 +181,18 @@
             <div class="card-body"><div class="row g-3" id="ideias"></div></div>
           </div></div>
 
-          <!-- últimos -->
           <div class="col-12"><div class="card">
-            <div class="card-header"><h3 class="card-title">Últimos comentários publicados</h3></div>
+            <div class="card-header"><h3 class="card-title">Itens</h3>
+              <div class="card-actions text-secondary small" id="t-contagem"></div></div>
             <div class="card-table table-responsive">
-              <table class="table table-vcenter card-table"><thead><tr><th>Quando</th><th>Rede</th><th>Comentário</th><th>Estilo</th>
-                <th class="text-end">Nota</th><th class="text-end">Curtidas</th><th class="text-end">Respostas</th></tr></thead>
-              <tbody id="t-ultimos"></tbody></table>
+              <table class="table table-vcenter card-table"><thead><tr>
+                <th class="ord desc" data-ord="quando">Quando</th><th>Rede</th><th>Texto</th><th>Estilo</th>
+                <th class="ord text-end" data-ord="nota">Nota</th><th class="ord text-end" data-ord="curtidas">Curtidas</th><th class="ord text-end" data-ord="respostas">Respostas</th></tr></thead>
+              <tbody id="t-itens"></tbody></table>
+            </div>
+            <div class="card-footer d-flex align-items-center">
+              <span class="text-secondary small" id="pag-info"></span>
+              <div class="ms-auto btn-group"><button class="btn btn-sm" id="pag-ant">Anterior</button><button class="btn btn-sm" id="pag-prox">Próxima</button></div>
             </div>
           </div></div>
 
@@ -135,7 +200,7 @@
       </div>
     </div>
     <footer class="footer footer-transparent d-print-none">
-      <div class="container-xl text-secondary small"><span id="rodape">Atualiza sozinho a cada 60 s · dados do banco local do agente</span></div>
+      <div class="container-xl text-secondary small"><span id="rodape">Atualiza sozinho a cada 60 s · dados do banco local do agente · ⌥-clique numa rede mostra só ela</span></div>
     </footer>
   </div>
 </div>
@@ -143,127 +208,296 @@
 <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
 <script>
+const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface"];
 const NOMES = {x: "X", linkedin: "LinkedIn", instagram: "Instagram", reddit: "Reddit", youtube: "YouTube",
   tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF"};
-const CORES = {x: "#1d273b", linkedin: "#0a66c2", instagram: "#d6249f", reddit: "#ff4500", youtube: "#e62117",
+const CORES = {x: "#3b4a63", linkedin: "#0a66c2", instagram: "#d6249f", reddit: "#ff4500", youtube: "#e62117",
   tiktok: "#00b8b0", facebook: "#1877f2", github: "#6e5494", huggingface: "#f5a623"};
+const PLURAL = {terceiro: ["comentário", "comentários"], resposta: ["conversa", "conversas"], post: ["post próprio", "posts próprios"], video: ["vídeo", "vídeos"], dm: ["DM", "DMs"]};
+const TIPOS = {terceiro: "Comentário", resposta: "Conversa", post: "Post próprio", video: "Vídeo", dm: "DM"};
+const STATUS = {publicado: ["publicado", "green"], pendente: ["na fila", "blue"], reprovado: ["reprovado", "red"],
+  ignorado: ["descartado", "secondary"], erro: ["erro", "orange"], manual: ["manual", "purple"]};
+const ORIGENS = {turno: "Turno", radar: "Radar", conversa: "Conversa", post: "Autor", video: "Vídeos", dm: "DM"};
 const nome = r => NOMES[r] || r;
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const num = n => (n ?? 0).toLocaleString("pt-BR");
 const traco = v => v === null || v === undefined ? '<span class="text-secondary">–</span>' : num(v);
+const ponto = r => `<span class="ponto me-2" style="background:${CORES[r] || "#999"}"></span>`;
+const quando = i => i.publicado || i.criado;
+const dia = t => { const d = new Date(t * 1000); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 const PUBLICO = !/^(127\.0\.0\.1|localhost)$/.test(location.hostname);
-if (PUBLICO) document.querySelector('a[href="/"]').remove();
-let dados = null, gDia = null, gHora = null, campo = "rede";
+const escuro = () => document.documentElement.getAttribute("data-bs-theme") === "dark";
+if (PUBLICO) document.getElementById("link-painel").remove();
 
-function kpis(k) {
+let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", -1], pagina = 0;
+const POR_PAGINA = 20;
+
+// ---------- filtros (guardados no link: dá para mandar a visão filtrada para alguém) ----------
+const PADRAO = () => ({p: 30, redes: new Set(REDES), tipo: "", origem: "", status: "publicado", q: ""});
+const F = PADRAO();
+function lerHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  Object.assign(F, PADRAO());
+  if (h.get("p")) F.p = +h.get("p") || 30;
+  if (h.has("r")) F.redes = new Set(h.get("r").split(",").filter(r => REDES.includes(r)));
+  F.tipo = h.get("t") || ""; F.origem = h.get("o") || ""; if (h.has("s")) F.status = h.get("s"); F.q = h.get("q") || "";
+}
+function gravarHash() {
+  const h = new URLSearchParams();
+  if (F.p !== 30) h.set("p", F.p);
+  if (F.redes.size !== REDES.length) h.set("r", [...F.redes].join(","));
+  if (F.tipo) h.set("t", F.tipo);
+  if (F.origem) h.set("o", F.origem);
+  if (F.status !== "publicado") h.set("s", F.status);
+  if (F.q) h.set("q", F.q);
+  const s = h.toString();
+  history.replaceState(null, "", s ? "#" + s : location.pathname + location.search);
+}
+function inicio(offset = 0) {  // 0h do 1º dia do período; offset = 1 dá o período anterior
+  const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (F.p - 1) - offset * F.p); return d.getTime() / 1000;
+}
+function filtrados(offset = 0, comStatus = true) {
+  const ini = inicio(offset), fim = offset ? inicio(0) : Infinity, q = F.q.toLowerCase();
+  return (dados.itens || []).filter(i => {
+    const t = quando(i);
+    return t >= ini && t < fim && F.redes.has(i.rede) && (!F.tipo || i.tipo === F.tipo) && (!F.origem || i.origem === F.origem)
+      && (!comStatus || !F.status || i.status === F.status) && (!q || (i.texto || "").toLowerCase().includes(q));
+  });
+}
+
+// ---------- controles ----------
+function montarControles() {
+  const fr = document.getElementById("f-redes");
+  fr.innerHTML = `<button type="button" class="chip" id="redes-todas">Todas</button>` +
+    REDES.map(r => `<button type="button" class="chip" data-r="${r}" aria-pressed="true"><span class="ponto" style="background:${CORES[r]}"></span>${nome(r)}</button>`).join("") +
+    `<a href="#" class="small ms-auto" id="limpar">Limpar filtros</a>`;
+  fr.addEventListener("click", e => {
+    const c = e.target.closest("[data-r]");
+    if (e.target.closest("#redes-todas")) F.redes = new Set(F.redes.size === REDES.length ? [] : REDES);
+    else if (e.target.closest("#limpar")) { e.preventDefault(); Object.assign(F, PADRAO()); }
+    else if (c) {
+      const r = c.dataset.r;
+      if (e.altKey || e.metaKey) F.redes = new Set([r]);  // ⌥/⌘-clique: só esta rede
+      else F.redes.has(r) ? F.redes.delete(r) : F.redes.add(r);
+    } else return;
+    aplicar();
+  });
+  document.getElementById("periodo").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b) { F.p = +b.dataset.p; aplicar(); } });
+  for (const [id, k] of [["f-tipo", "tipo"], ["f-origem", "origem"], ["f-status", "status"]])
+    document.getElementById(id).addEventListener("change", e => { F[k] = e.target.value; aplicar(); });
+  let t;
+  document.getElementById("f-busca").addEventListener("input", e => { clearTimeout(t); t = setTimeout(() => { F.q = e.target.value.trim(); aplicar(); }, 250); });
+  document.querySelectorAll("th.ord").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.ord; ordem = [k, ordem[0] === k ? -ordem[1] : -1]; pagina = 0; tabela();
+  }));
+  document.getElementById("pag-ant").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); tabela(); });
+  document.getElementById("pag-prox").addEventListener("click", () => { pagina++; tabela(); });
+  document.getElementById("exportar").addEventListener("click", exportar);
+  document.getElementById("abas").addEventListener("click", e => {
+    const a = e.target.closest("[data-campo]"); if (!a) return; e.preventDefault();
+    document.querySelectorAll("#abas .nav-link").forEach(x => x.classList.toggle("active", x === a));
+    campo = a.dataset.campo; grupo();
+  });
+}
+function sincronizarControles() {
+  document.querySelectorAll("#periodo [data-p]").forEach(b => b.classList.toggle("active", +b.dataset.p === F.p));
+  document.querySelectorAll("#f-redes [data-r]").forEach(c => { const on = F.redes.has(c.dataset.r); c.classList.toggle("off", !on); c.setAttribute("aria-pressed", on); });
+  document.getElementById("f-tipo").value = F.tipo;
+  document.getElementById("f-origem").value = F.origem;
+  document.getElementById("f-status").value = F.status;
+  const b = document.getElementById("f-busca"); if (document.activeElement !== b) b.value = F.q;
+}
+
+// ---------- números ----------
+const soma = (l, k) => l.reduce((s, i) => s + (i[k] || 0), 0);
+const engaj = l => soma(l, "curtidas") + soma(l, "respostas");
+const medidos = l => l.filter(i => i.curtidas !== null && i.curtidas !== undefined);
+const taxa = l => { const m = medidos(l); return m.length ? Math.round(100 * m.filter(i => i.respostas > 0).length / m.length) : null; };
+const aprov = l => { const g = l.filter(i => i.tipo === "terceiro" && i.status !== "pendente"); return g.length ? Math.round(100 * g.filter(i => i.status === "publicado").length / g.length) : null; };
+const media = l => l.length ? Math.round(l.reduce((a, b) => a + b, 0) / l.length) : null;
+function delta(id, agora, antes, sufixo = "") {
+  const el = document.getElementById(id);
+  if (agora === null || antes === null || antes === undefined) { el.innerHTML = ""; return; }
+  const d = agora - antes;
+  el.innerHTML = !d ? `<span class="text-secondary" title="igual ao período anterior">=</span>`
+    : `<span class="${d > 0 ? "text-green" : "text-red"}" title="período anterior: ${num(antes)}${sufixo}">${d > 0 ? "▲" : "▼"} ${num(Math.abs(d))}${sufixo}</span>`;
+}
+function kpis(l, ant, todos, todosAnt, comparar) {
   const set = (id, v) => document.getElementById(id).textContent = v;
-  set("k-publicados", num(k.publicados)); set("k-hoje", num(k.hoje)); set("k-semana", num(k.semana));
-  set("k-conversas", num(k.conversas_recebidas)); set("k-respondidas", num(k.conversas_respondidas));
-  set("k-curtidas", num(k.curtidas)); set("k-medidos", num(k.medidos));
-  set("k-aprov", k.gerados ? Math.round(100 * k.publicados / k.gerados) + "%" : "–");
-  set("k-nota", k.nota_media ?? "–"); set("k-barrados", num(k.reprovados + k.ignorados));
+  const pub = l.filter(i => i.status === "publicado"), pubA = ant.filter(i => i.status === "publicado");
+  const c = (a, b) => comparar ? b : null;
+  set("k-pub", num(pub.length)); delta("d-pub", pub.length, c(0, pubA.length));
+  const porTipo = Object.entries(pub.reduce((a, i) => (a[i.tipo] = (a[i.tipo] || 0) + 1, a), {})).map(([t, n]) => `${n} ${(PLURAL[t] || [t, t])[n === 1 ? 0 : 1]}`);
+  set("k-pub-sub", porTipo.join(" · ") || "nada no período");
+  set("k-eng", num(engaj(pub))); delta("d-eng", engaj(pub), c(0, engaj(pubA)));
+  set("k-eng-sub", `${num(soma(pub, "curtidas"))} curtidas · ${num(soma(pub, "respostas"))} respostas · ${medidos(pub).length} medidos`);
+  const tx = taxa(pub); set("k-taxa", tx === null ? "–" : tx + "%"); delta("d-taxa", tx, c(0, taxa(pubA)), " p.p.");
+  const ap = aprov(todos); set("k-aprov", ap === null ? "–" : ap + "%"); delta("d-aprov", ap, c(0, aprov(todosAnt)), " p.p.");
+  const nm = media(todos.filter(i => i.nota !== null && i.status === "publicado").map(i => i.nota));
+  set("k-aprov-sub", `nota média ${nm ?? "–"} · ${todos.filter(i => ["reprovado", "ignorado"].includes(i.status)).length} barrados`);
 }
 
-function graficoDia(linhas) {
-  const dias = [...new Set(linhas.map(l => l.dia))];
-  const redes = [...new Set(linhas.map(l => l.rede))];
-  const series = redes.map(r => ({name: nome(r), data: dias.map(d => (linhas.find(l => l.dia === d && l.rede === r) || {}).n || 0)}));
-  const opt = {chart: {type: "bar", stacked: true, height: 280, toolbar: {show: false}, fontFamily: "inherit"},
-    series, colors: redes.map(r => CORES[r] || "#999"), plotOptions: {bar: {columnWidth: "45%"}}, dataLabels: {enabled: false},
-    xaxis: {categories: dias.map(d => d.slice(8, 10) + "/" + d.slice(5, 7))}, legend: {position: "bottom"},
-    grid: {strokeDashArray: 4}, yaxis: {labels: {formatter: v => Math.round(v)}}};
-  if (gDia) gDia.updateOptions(opt); else (gDia = new ApexCharts(document.getElementById("g-dia"), opt)).render();
+// ---------- gráficos ----------
+const corTexto = () => escuro() ? "#9aa0ac" : "#667382";
+const corGrade = () => escuro() ? "#2c3344" : "#e6e7e9";
+function graficoDia(l) {
+  const dias = [];
+  for (let t = inicio(0); t <= Date.now() / 1000; t += 86400) dias.push(dia(t + 3600));
+  const pub = l.filter(i => i.status === "publicado"), redes = REDES.filter(r => pub.some(i => i.rede === r));
+  const series = redes.map(r => ({name: nome(r), data: dias.map(d => pub.filter(i => i.rede === r && dia(quando(i)) === d).length)}));
+  const opt = {chart: {type: "bar", stacked: true, height: 280, toolbar: {show: false}, fontFamily: "inherit", background: "transparent", foreColor: corTexto(), animations: {enabled: false}},
+    theme: {mode: escuro() ? "dark" : "light"}, series, colors: redes.map(r => CORES[r]),
+    plotOptions: {bar: {columnWidth: dias.length > 40 ? "80%" : "50%", borderRadius: 2}}, dataLabels: {enabled: false},
+    xaxis: {categories: dias.map(d => d.slice(8, 10) + "/" + d.slice(5, 7)), labels: {rotate: 0, hideOverlappingLabels: true}},
+    legend: {position: "bottom"}, grid: {strokeDashArray: 4, borderColor: corGrade()}, tooltip: {theme: escuro() ? "dark" : "light"},
+    yaxis: {labels: {formatter: v => Math.round(v)}}, noData: {text: "Nada publicado com esses filtros"}};
+  if (gDia) gDia.updateOptions(opt, true, false); else (gDia = new ApexCharts(document.getElementById("g-dia"), opt)).render();
+}
+function graficoHora(l) {
+  const horas = Array.from({length: 15}, (_, i) => i + 7), pub = l.filter(i => i.status === "publicado");
+  const daHora = h => pub.filter(i => new Date(quando(i) * 1000).getHours() === h);
+  const med = h => { const m = medidos(daHora(h)); return m.length ? +(engaj(m) / m.length).toFixed(2) : null; };
+  const opt = {chart: {type: "line", height: 240, toolbar: {show: false}, fontFamily: "inherit", background: "transparent", foreColor: corTexto(), animations: {enabled: false}},
+    theme: {mode: escuro() ? "dark" : "light"}, colors: ["#E94A12", escuro() ? "#cfd3da" : "#1d273b"], stroke: {width: [0, 2], curve: "smooth"},
+    series: [{name: "Publicados", type: "column", data: horas.map(h => daHora(h).length)}, {name: "Engajamento médio", type: "line", data: horas.map(med)}],
+    xaxis: {categories: horas.map(h => h + "h")}, dataLabels: {enabled: false}, grid: {strokeDashArray: 4, borderColor: corGrade()},
+    plotOptions: {bar: {columnWidth: "55%", borderRadius: 2}}, legend: {position: "bottom"}, tooltip: {theme: escuro() ? "dark" : "light"},
+    yaxis: [{labels: {formatter: v => Math.round(v)}}, {opposite: true, labels: {formatter: v => v === null || v === undefined ? "" : v.toFixed(1)}}]};
+  if (gHora) gHora.updateOptions(opt, true, false); else (gHora = new ApexCharts(document.getElementById("g-hora"), opt)).render();
 }
 
-function graficoHora(linhas) {
-  const horas = Array.from({length: 15}, (_, i) => i + 7);
-  const opt = {chart: {type: "bar", height: 220, toolbar: {show: false}, fontFamily: "inherit"}, colors: ["#E94A12"],
-    series: [{name: "Publicados", data: horas.map(h => (linhas.find(l => l.hora === h) || {}).n || 0)}],
-    xaxis: {categories: horas.map(h => h + "h")}, dataLabels: {enabled: false}, grid: {strokeDashArray: 4},
-    plotOptions: {bar: {columnWidth: "55%", borderRadius: 2}}, yaxis: {labels: {formatter: v => Math.round(v)}}};
-  if (gHora) gHora.updateOptions(opt); else (gHora = new ApexCharts(document.getElementById("g-hora"), opt)).render();
+// ---------- cartões ----------
+function limites(l) {
+  document.getElementById("limites").innerHTML = Object.entries(l).filter(([r]) => F.redes.has(r)).map(([r, v]) => {
+    const pct = v.dia ? Math.min(100, Math.round(100 * v.hoje / v.dia)) : 0;
+    const freio = v.freio ? `<span class="badge bg-warning-lt ms-1" title="${esc(v.freio)}">freio</span>` : "";
+    const login = v.sessao === "fora" ? `<span class="badge bg-danger-lt ms-1">sem login</span>` : "";
+    const pausa = v.pausada_ate ? `<span class="badge bg-warning-lt ms-1" title="pausada até ${new Date(v.pausada_ate * 1000).toLocaleString("pt-BR")}">pausada</span>` : "";
+    return `<div class="mb-3"><div class="d-flex align-items-center mb-1 small"><div class="d-flex align-items-center">${ponto(r)}${nome(r)}${login}${freio}${pausa}</div>
+      <div class="ms-auto text-secondary">${v.hoje}/${v.dia}</div></div>
+      <div class="progress barra-limite"><div class="progress-bar" style="width:${pct}%;background:${pct >= 100 ? "var(--tblr-secondary)" : CORES[r]}"></div></div></div>`;
+  }).join("") || '<div class="vazio">Nenhuma rede selecionada.</div>';
 }
-
+function spark(vals, cor) {
+  if (vals.length < 2) return '<span class="text-secondary small">–</span>';
+  const w = 96, h = 24, mn = Math.min(...vals), mx = Math.max(...vals), sp = mx - mn || 1;
+  const pts = vals.map((v, i) => `${(i * w / (vals.length - 1)).toFixed(1)},${(h - 2 - (v - mn) * (h - 4) / sp).toFixed(1)}`).join(" ");
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${cor}" stroke-width="1.75" stroke-linejoin="round" points="${pts}"/></svg>`;
+}
+function seguidores(s) {
+  const desde = dia(inicio(0) + 3600), por = {};
+  s.filter(l => F.redes.has(l.rede)).forEach(l => (por[l.rede] = por[l.rede] || []).push(l));
+  let saldo = 0, n = 0;
+  const linhas = REDES.filter(r => por[r]).map(r => {
+    const tudo = por[r], v = tudo.filter(l => l.dia >= desde), base = v.length ? v : tudo.slice(-1);
+    const a = base[0].valor, b = base[base.length - 1].valor, d = b - a; saldo += d; n++;
+    const cls = d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary";
+    return `<tr><td class="text-nowrap">${ponto(r)}${nome(r)}</td><td>${spark(base.map(x => x.valor), CORES[r])}</td>
+      <td class="text-end">${num(a)}<div class="text-secondary small">${base[0].dia.slice(8, 10)}/${base[0].dia.slice(5, 7)}</div></td>
+      <td class="text-end">${num(b)}</td><td class="text-end ${cls}">${d > 0 ? "+" : ""}${num(d)}</td></tr>`;
+  });
+  document.getElementById("t-seguidores").innerHTML = linhas.join("") || '<tr><td colspan="5" class="vazio">Ainda sem medição.</td></tr>';
+  const k = document.getElementById("k-seg");
+  k.textContent = n ? (saldo > 0 ? "+" : "") + num(saldo) : "–";
+  k.className = "h1 mb-0 " + (saldo > 0 ? "text-green" : saldo < 0 ? "text-red" : "");
+  document.getElementById("k-seg-sub").textContent = n ? `soma de ${n} redes no período` : "sem medição";
+}
+function grupo() {
+  const pub = filtrados(0).filter(i => i.status === "publicado"), g = {};
+  const chave = i => campo === "rede" ? i.rede : campo === "estilo" ? (i.estilo || "sem registro") : campo === "tipo" ? i.tipo : i.origem;
+  pub.forEach(i => (g[chave(i)] = g[chave(i)] || []).push(i));
+  const rot = k => campo === "rede" ? nome(k) : campo === "tipo" ? (TIPOS[k] || k) : campo === "origem" ? (ORIGENS[k] || k) : k;
+  const tr = '<span class="text-secondary">–</span>';
+  document.getElementById("t-grupo").innerHTML = Object.entries(g).sort((a, b) => b[1].length - a[1].length).map(([k, l]) => {
+    const m = medidos(l), c = soma(l, "curtidas"), tx = taxa(l), nm = media(l.filter(i => i.nota !== null).map(i => i.nota));
+    return `<tr><td class="text-nowrap">${campo === "rede" ? ponto(k) : ""}${esc(rot(k))}</td>
+      <td class="text-end">${num(l.length)}</td><td class="text-end">${num(m.length)}</td><td class="text-end">${num(c)}</td>
+      <td class="text-end">${m.length ? (c / m.length).toFixed(2).replace(".", ",") : tr}</td><td class="text-end">${num(soma(l, "respostas"))}</td>
+      <td class="text-end">${tx === null ? tr : tx + "%"}</td><td class="text-end">${nm ?? tr}</td></tr>`;
+  }).join("") || '<tr><td colspan="8" class="vazio">Nada publicado com esses filtros.</td></tr>';
+}
 function ideiasCard(d, aj) {
   const el = document.getElementById("bloco-ideias");
   if (!d || !d.pautas || !d.pautas.length) { el.style.display = "none"; return; }
   el.style.display = "";
-  const esc = t => String(t || "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
   document.getElementById("autoajuste").textContent = (aj || "") + " · pautas de " + d.dia.split("-").reverse().join("/");
   document.getElementById("ideias").innerHTML = d.pautas.map(p => `<div class="col-md-4"><div class="border rounded p-3 h-100">
     <span class="badge bg-orange-lt mb-2">${esc(p.formato)}</span><h4 class="mb-1">${esc(p.titulo)}</h4>
     <p class="text-secondary mb-2"><em>${esc(p.gancho)}</em></p>
     <ul class="mb-0 small">${(p.roteiro || []).map(r => `<li>${esc(r)}</li>`).join("")}</ul></div></div>`).join("");
 }
-function limites(l) {
-  document.getElementById("limites").innerHTML = Object.entries(l).map(([r, v]) => {
-    const pct = v.dia ? Math.min(100, Math.round(100 * v.hoje / v.dia)) : 0;
-    const login = v.sessao === "fora" ? `<span class="badge bg-danger-lt ms-1">sem login</span>` : (v.sessao === "ok" ? `<span class="badge bg-success-lt ms-1" title="sessão conferida">logado</span>` : "");
-    const pausa = v.pausada_ate ? `<span class="badge bg-warning-lt ms-1">pausada até ${new Date(v.pausada_ate * 1000).toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"})}</span>` : "";
-    return `<div class="mb-3"><div class="d-flex mb-1"><div>${nome(r)}${login}${pausa}</div><div class="ms-auto text-secondary">${v.hoje}/${v.dia}</div></div>
-      <div class="progress barra-limite"><div class="progress-bar ${pct >= 100 ? "bg-secondary" : ""}" style="width:${pct}%;${pct < 100 ? "background:" + (CORES[r] || "#E94A12") : ""}"></div></div></div>`;
-  }).join("");
-}
 
-function seguidores(s) {
-  const por = {};
-  s.forEach(l => (por[l.rede] = por[l.rede] || []).push(l));
-  const linhas = Object.entries(por).map(([r, v]) => {
-    const a = v[0].valor, b = v[v.length - 1].valor, d = b - a;
-    const cls = d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary";
-    return `<tr><td>${nome(r)}</td><td class="text-end">${num(a)}<div class="text-secondary small">${v[0].dia.slice(8, 10)}/${v[0].dia.slice(5, 7)}</div></td>
-      <td class="text-end">${num(b)}</td><td class="text-end ${cls}">${d > 0 ? "+" : ""}${num(d)}</td></tr>`;
-  });
-  document.getElementById("t-seguidores").innerHTML = linhas.join("") || '<tr><td colspan="4" class="vazio">Ainda sem medição.</td></tr>';
+// ---------- tabela de itens ----------
+function ordenados() {
+  const [k, s] = ordem, val = i => k === "quando" ? quando(i) : (i[k] ?? -1);
+  return filtrados(0).sort((a, b) => s * (val(a) - val(b)));
 }
-
-function grupo() {
-  const linhas = dados[campo] || [];
-  document.getElementById("t-grupo").innerHTML = linhas.map(g => `<tr>
-    <td>${esc(campo === "rede" ? nome(g.grupo) : g.grupo)}</td><td class="text-end">${num(g.publicados)}</td><td class="text-end">${num(g.medidos)}</td>
-    <td class="text-end">${num(g.curtidas)}</td><td class="text-end">${traco(g.curtidas_media)}</td><td class="text-end">${num(g.respostas)}</td>
-    <td class="text-end">${g.taxa_resposta === null ? '<span class="text-secondary">–</span>' : g.taxa_resposta + "%"}</td></tr>`).join("")
-    || '<tr><td colspan="7" class="vazio">Nada publicado ainda.</td></tr>';
-}
-
-function ultimos(l) {
-  document.getElementById("t-ultimos").innerHTML = l.map(i => {
-    const d = new Date(i.publicado * 1000);
-    const quando = d.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
-    const conversa = i.tipo === "resposta" ? '<span class="badge bg-azure-lt ms-1">conversa</span>' : "";
-    return `<tr><td class="text-nowrap text-secondary">${quando}</td>
-      <td><span class="badge rede-badge text-white" style="background:${CORES[i.rede] || "#999"}">${nome(i.rede)}</span>${conversa}</td>
+function tabela() {
+  const l = ordenados(), paginas = Math.max(1, Math.ceil(l.length / POR_PAGINA));
+  pagina = Math.min(pagina, paginas - 1);
+  document.querySelectorAll("th.ord").forEach(th => { th.classList.remove("asc", "desc"); if (th.dataset.ord === ordem[0]) th.classList.add(ordem[1] > 0 ? "asc" : "desc"); });
+  document.getElementById("t-itens").innerHTML = l.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA).map(i => {
+    const d = new Date(quando(i) * 1000);
+    const q = d.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
+    const tipo = i.tipo !== "terceiro" ? `<span class="badge bg-azure-lt ms-1">${esc((TIPOS[i.tipo] || i.tipo).toLowerCase())}</span>` : "";
+    const radar = i.origem === "radar" ? '<span class="badge bg-orange-lt ms-1">radar</span>' : "";
+    const st = i.status !== "publicado" ? `<span class="badge bg-${(STATUS[i.status] || ["", "secondary"])[1]}-lt ms-1">${esc((STATUS[i.status] || [i.status])[0])}</span>` : "";
+    return `<tr><td class="text-nowrap text-secondary">${q}</td>
+      <td class="text-nowrap"><span class="badge rede-badge text-white" style="background:${CORES[i.rede] || "#999"}">${nome(i.rede)}</span>${tipo}${radar}${st}</td>
       <td>${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener" class="texto-com d-block text-reset">${esc(i.texto)}</a>` : `<span class="texto-com d-block">${esc(i.texto)}</span>`}</td>
       <td class="text-secondary">${esc(i.estilo || "–")}</td><td class="text-end">${traco(i.nota)}</td>
       <td class="text-end">${traco(i.curtidas)}</td><td class="text-end">${traco(i.respostas)}</td></tr>`;
-  }).join("") || '<tr><td colspan="7" class="vazio">Nada publicado ainda.</td></tr>';
+  }).join("") || '<tr><td colspan="7" class="vazio">Nenhum item com esses filtros.</td></tr>';
+  document.getElementById("t-contagem").textContent = `${num(l.length)} itens`;
+  document.getElementById("pag-info").textContent = l.length ? `${pagina * POR_PAGINA + 1}–${Math.min(l.length, (pagina + 1) * POR_PAGINA)} de ${num(l.length)}` : "";
+  document.getElementById("pag-ant").disabled = pagina === 0;
+  document.getElementById("pag-prox").disabled = pagina >= paginas - 1;
+}
+function exportar() {
+  if (!dados) return;
+  const cols = ["quando", "rede", "tipo", "status", "origem", "estilo", "nota", "curtidas", "respostas", "texto", ...(PUBLICO ? [] : ["url"])];
+  const cel = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const val = (i, c) => c === "quando" ? new Date(quando(i) * 1000).toLocaleString("pt-BR") : c === "rede" ? nome(i.rede) : c === "tipo" ? (TIPOS[i.tipo] || i.tipo) : i[c];
+  const linhas = ordenados().map(i => cols.map(c => cel(val(i, c))).join(";"));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + [cols.join(";"), ...linhas].join("\n")], {type: "text/csv;charset=utf-8"}));
+  a.download = `agora-${dia(Date.now() / 1000)}.csv`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+// ---------- montagem ----------
+function aplicar() {
+  gravarHash(); sincronizarControles(); pagina = 0;
+  if (!dados) return;
+  const comparar = F.p < 90;  // 90 dias = tudo o que o painel guarda: não há período anterior
+  kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
+  graficoDia(filtrados(0)); graficoHora(filtrados(0));
+  limites(dados.limites || {}); seguidores(dados.seguidores || []); grupo(); tabela();
+}
 async function carregar() {
   try {
     dados = await (await fetch(PUBLICO ? "dados.json?" + Date.now() : "/api/performance")).json();
   } catch (e) { document.getElementById("atualizado").textContent = "agente fora do ar"; return; }
-  kpis(dados.kpi); graficoDia(dados.por_dia); graficoHora(dados.por_hora); limites(dados.limites);
+  if (!dados.itens) dados.itens = (dados.ultimos || []).map(i => ({...i, status: "publicado", origem: i.tipo === "resposta" ? "conversa" : "turno"}));
+  const pg = pagina; aplicar(); pagina = pg; tabela();
   ideiasCard(dados.ideias, dados.autoajuste);
-  seguidores(dados.seguidores); grupo(); ultimos(dados.ultimos);
-  const j = document.getElementById("janela");
-  const al = document.getElementById("alerta-llm");
+  const j = document.getElementById("janela"), al = document.getElementById("alerta-llm");
   if (dados.llm && !dados.llm.ok) { al.classList.remove("d-none"); al.querySelector("span").textContent = dados.llm.detalhe.slice(0, 60); }
   else al.classList.add("d-none");
-  j.className = "badge " + (dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
+  j.className = "badge " + (PUBLICO ? "bg-primary-lt" : dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
   j.textContent = PUBLICO ? `publica das ${dados.janela[0]} às ${dados.janela[1]}` : (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
-  if (PUBLICO) j.className = "badge bg-primary-lt";
   if (!PUBLICO && dados.llm && !dados.llm.ok) { j.className = "badge bg-red-lt"; j.textContent = "parado · LLM fora do ar"; }
   const t = new Date(PUBLICO ? dados.agora * 1000 : Date.now());
   document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
 }
 
-document.getElementById("abas").addEventListener("click", e => {
-  const a = e.target.closest("[data-campo]"); if (!a) return; e.preventDefault();
-  document.querySelectorAll("#abas .nav-link").forEach(x => x.classList.toggle("active", x === a));
-  campo = a.dataset.campo; grupo();
+lerHash(); montarControles(); sincronizarControles();
+addEventListener("hashchange", () => { lerHash(); aplicar(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+  document.documentElement.setAttribute("data-bs-theme", e.matches ? "dark" : "light");
+  if (dados) { graficoDia(filtrados(0)); graficoHora(filtrados(0)); }
 });
-if (PUBLICO) document.getElementById("rodape").textContent = "Números reais do agente, publicados 1× por dia · sem links nem contas";
+if (PUBLICO) document.getElementById("rodape").textContent = "Números reais do agente, publicados 1× por dia · sem links nem contas · ⌥-clique numa rede mostra só ela";
 carregar(); setInterval(carregar, 60000);
 </script>
 </body>
