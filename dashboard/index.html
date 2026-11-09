@@ -66,6 +66,8 @@
             <h2 class="page-title" id="titulo-pagina">Visão geral</h2>
           </div>
           <div class="col-auto d-flex align-items-center gap-2">
+            <span class="badge bg-secondary-lt d-none" id="b-noar"></span>
+            <span class="badge bg-secondary-lt d-none" id="b-ensaio"></span>
             <span class="text-secondary small" id="atualizado"></span>
             <button class="btn btn-sm" id="exportar" title="Baixar os itens filtrados em CSV">Exportar CSV</button>
           </div>
@@ -238,6 +240,7 @@
               <li><b>1 comentário por post</b> e 1 por perfil por dia.</li>
               <li><b>Guarda de seguidores</b>: se uma rede perde seguidores, freia nela por 72 h.</li>
               <li><b>Aviso da rede</b> (limite, bloqueio, captcha): pausa a rede, não insiste.</li>
+              <li><b>Ensaio diário</b> às 06h30: confere login e o passo a passo em cada rede, sem enviar; falhou, pausa e avisa.</li>
               <li><b>Marcação certa</b>: o @ só sai se o nome bater exatamente; nunca marca outra pessoa.</li>
               <li><b>Contas reais</b>, nunca falsas; nenhuma senha digitada pelo agente.</li>
             </ul></div>
@@ -594,6 +597,27 @@ function alvos(l) {
     || '<tr><td colspan="3" class="vazio">Ainda lendo os perfis dos autores.</td></tr>';
 }
 
+// ---------- saúde: % no ar na janela e ensaio diário ----------
+function saude(sd) {
+  const na = sd.no_ar || {}, b = document.getElementById("b-noar");
+  if (na.pct7 !== null && na.pct7 !== undefined) {
+    b.classList.remove("d-none");
+    b.className = "badge " + (na.pct7 >= 95 ? "bg-green-lt" : na.pct7 >= 80 ? "bg-orange-lt" : "bg-red-lt");
+    b.textContent = `no ar ${String(na.pct7).replace(".", ",")}% · 7 dias`;
+    b.title = "Blocos de 5 min da janela de publicação em que o agente estava rodando. Meta do nível 3: 95 %. 30 dias: " + (na.pct30 ?? "–") + " %";
+  }
+  const e = sd.ensaio || {}, be = document.getElementById("b-ensaio");
+  if (e.total) {
+    const hist = Object.values(sd.ensaio_hist || {}), verdes = hist.filter(h => h.ok === h.total).length;
+    be.classList.remove("d-none");
+    be.className = "badge " + (e.ok === e.total ? "bg-green-lt" : "bg-red-lt");
+    be.textContent = `ensaio ${e.ok}/${e.total}` + (e.dia !== dia(Date.now() / 1000) ? " (ontem)" : "");
+    be.title = `Ensaio diário de ${e.dia.split("-").reverse().join("/")}: login + digitar e apagar um comentário com @ em cada rede, sem enviar.\n`
+      + Object.entries(e.redes || {}).map(([r, v]) => `${v.ok ? "✓" : "✗"} ${nome(r)}: ${v.detalhe}`).join("\n")
+      + `\nDias com as 9 redes verdes: ${verdes} de ${hist.length} (meta do nível 3: 90 %)`;
+  }
+}
+
 // ---------- cartões ----------
 function limites(l) {
   document.getElementById("limites").innerHTML = Object.entries(l).filter(([r]) => F.redes.has(r)).map(([r, v]) => {
@@ -746,6 +770,7 @@ async function carregar() {
   if (!dados.itens) dados.itens = (dados.ultimos || []).map(i => ({...i, status: "publicado", origem: i.tipo === "resposta" ? "conversa" : "turno"}));
   const pg = pagina; aplicar(); pagina = pg; tabela();
   ideiasCard(dados.ideias, dados.autoajuste);
+  saude(dados.saude || {});
   if (!carregar.feito) { carregar.feito = true; mostrarPagina(); }  // 1ª carga: abre a página do link (e mede quantos itens cabem)
   const j = document.getElementById("janela"), al = document.getElementById("alerta-llm");
   if (dados.llm && !dados.llm.ok) { al.classList.remove("d-none"); al.querySelector("span").textContent = dados.llm.detalhe.slice(0, 60); }
