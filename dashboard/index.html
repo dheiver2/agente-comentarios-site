@@ -62,7 +62,7 @@
       <div class="container-xl">
         <div class="row g-2 align-items-center">
           <div class="col">
-            <div class="page-pretitle">Autoridade em IA · 9 redes</div>
+            <div class="page-pretitle">Autoridade em IA · 10 redes</div>
             <h2 class="page-title" id="titulo-pagina">Visão geral</h2>
           </div>
           <div class="col-auto d-flex align-items-center gap-2">
@@ -206,7 +206,7 @@
 
           <!-- como funciona (explicação da solução) -->
           <div class="col-12"><div class="card" id="s-fluxo">
-            <div class="card-header"><h3 class="card-title">Ágora: presença técnica em IA nas 9 redes, no piloto automático</h3>
+            <div class="card-header"><h3 class="card-title">Ágora: presença técnica em IA nas 10 redes, no piloto automático</h3>
               <div class="card-actions text-secondary small">X · LinkedIn · Instagram · TikTok · YouTube · Facebook · Reddit · GitHub · fórum Hugging Face</div></div>
             <div class="card-body">
               <p class="text-secondary mb-3" style="font-size:.85rem">O objetivo é ser percebido como autoridade em IA pelo conteúdo: comentários técnicos, úteis e verificados,
@@ -224,7 +224,7 @@
           <div class="col-md-6 col-lg-3"><div class="card" id="s-papeis">
             <div class="card-header"><h3 class="card-title">Os papéis (mesma conta)</h3></div>
             <div class="card-body"><ul class="sobre-lista">
-              <li><b>Comentarista</b>: 3 turnos por dia nas 9 redes.</li>
+              <li><b>Comentarista</b>: 3 turnos por dia nas 10 redes.</li>
               <li><b>Radar</b>: chega cedo nos posts que estão subindo.</li>
               <li><b>Conversador</b>: responde quem respondeu (até 2 vezes por fio).</li>
               <li><b>Especialista</b>: perguntas sem resposta no GitHub e no fórum HF.</li>
@@ -260,7 +260,7 @@
             <div class="card-header"><h3 class="card-title">Por baixo</h3></div>
             <div class="card-body"><ul class="sobre-lista">
               <li><b>Navegador próprio</b> e invisível: não mexe no seu Chrome nem nas suas janelas.</li>
-              <li><b>Sessões</b>: a extensão entrega só os logins das 9 redes, só neste Mac.</li>
+              <li><b>Sessões</b>: a extensão entrega só os logins das 10 redes, só neste Mac.</li>
               <li><b>Leituras em paralelo</b>; publicações uma por vez.</li>
               <li><b>Modelos de IA</b> próprios: escrita, nota calibrada (Brier) e revisor técnico.</li>
               <li><b>Dashboard</b> com números reais, sem links nem contas na versão pública.</li>
@@ -341,11 +341,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
 <script>
-const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface"];
+const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface", "substack"];
 const NOMES = {x: "X", linkedin: "LinkedIn", instagram: "Instagram", reddit: "Reddit", youtube: "YouTube",
-  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF"};
+  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF", substack: "Substack"};
 const CORES = {x: "#3b4a63", linkedin: "#0a66c2", instagram: "#d6249f", reddit: "#ff4500", youtube: "#e62117",
-  tiktok: "#00b8b0", facebook: "#1877f2", github: "#6e5494", huggingface: "#f5a623"};
+  tiktok: "#00b8b0", facebook: "#1877f2", github: "#6e5494", huggingface: "#f5a623", substack: "#ff6719"};
 const PLURAL = {terceiro: ["comentário", "comentários"], resposta: ["conversa", "conversas"], post: ["post próprio", "posts próprios"], video: ["vídeo", "vídeos"], dm: ["DM", "DMs"]};
 const TIPOS = {terceiro: "Comentário", resposta: "Conversa", post: "Post próprio", video: "Vídeo", dm: "DM"};
 const STATUS = {publicado: ["publicado", "green"], pendente: ["na fila", "blue"], reprovado: ["reprovado", "red"],
@@ -617,7 +617,7 @@ function saude(sd) {
     be.textContent = `ensaio ${e.ok}/${e.total}` + (e.dia !== dia(Date.now() / 1000) ? " (ontem)" : "");
     be.title = `Ensaio diário de ${e.dia.split("-").reverse().join("/")}: login + digitar e apagar um comentário com @ em cada rede, sem enviar.\n`
       + Object.entries(e.redes || {}).map(([r, v]) => `${v.ok ? "✓" : "✗"} ${nome(r)}: ${v.detalhe}`).join("\n")
-      + `\nDias com as 9 redes verdes: ${verdes} de ${hist.length} (meta do nível 3: 90 %)`;
+      + `\nDias com as 10 redes verdes: ${verdes} de ${hist.length} (meta do nível 3: 90 %)`;
   }
 }
 
