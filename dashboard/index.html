@@ -114,6 +114,13 @@
             </div>
           </div></div>
 
+          <!-- pautas de conteúdo próprio (só no painel local) -->
+          <div class="col-12" id="bloco-ideias" style="display:none"><div class="card">
+            <div class="card-header"><h3 class="card-title">Pautas para o seu perfil</h3>
+              <div class="card-actions text-secondary small" id="autoajuste"></div></div>
+            <div class="card-body"><div class="row g-3" id="ideias"></div></div>
+          </div></div>
+
           <!-- últimos -->
           <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Últimos comentários publicados</h3></div>
@@ -177,11 +184,23 @@ function graficoHora(linhas) {
   if (gHora) gHora.updateOptions(opt); else (gHora = new ApexCharts(document.getElementById("g-hora"), opt)).render();
 }
 
+function ideiasCard(d, aj) {
+  const el = document.getElementById("bloco-ideias");
+  if (!d || !d.pautas || !d.pautas.length) { el.style.display = "none"; return; }
+  el.style.display = "";
+  const esc = t => String(t || "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+  document.getElementById("autoajuste").textContent = (aj || "") + " · pautas de " + d.dia.split("-").reverse().join("/");
+  document.getElementById("ideias").innerHTML = d.pautas.map(p => `<div class="col-md-4"><div class="border rounded p-3 h-100">
+    <span class="badge bg-orange-lt mb-2">${esc(p.formato)}</span><h4 class="mb-1">${esc(p.titulo)}</h4>
+    <p class="text-secondary mb-2"><em>${esc(p.gancho)}</em></p>
+    <ul class="mb-0 small">${(p.roteiro || []).map(r => `<li>${esc(r)}</li>`).join("")}</ul></div></div>`).join("");
+}
 function limites(l) {
   document.getElementById("limites").innerHTML = Object.entries(l).map(([r, v]) => {
     const pct = v.dia ? Math.min(100, Math.round(100 * v.hoje / v.dia)) : 0;
+    const login = v.sessao === "fora" ? `<span class="badge bg-danger-lt ms-1">sem login</span>` : (v.sessao === "ok" ? `<span class="badge bg-success-lt ms-1" title="sessão conferida">logado</span>` : "");
     const pausa = v.pausada_ate ? `<span class="badge bg-warning-lt ms-1">pausada até ${new Date(v.pausada_ate * 1000).toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"})}</span>` : "";
-    return `<div class="mb-3"><div class="d-flex mb-1"><div>${nome(r)}${pausa}</div><div class="ms-auto text-secondary">${v.hoje}/${v.dia}</div></div>
+    return `<div class="mb-3"><div class="d-flex mb-1"><div>${nome(r)}${login}${pausa}</div><div class="ms-auto text-secondary">${v.hoje}/${v.dia}</div></div>
       <div class="progress barra-limite"><div class="progress-bar ${pct >= 100 ? "bg-secondary" : ""}" style="width:${pct}%;${pct < 100 ? "background:" + (CORES[r] || "#E94A12") : ""}"></div></div></div>`;
   }).join("");
 }
@@ -225,6 +244,7 @@ async function carregar() {
     dados = await (await fetch(PUBLICO ? "dados.json?" + Date.now() : "/api/performance")).json();
   } catch (e) { document.getElementById("atualizado").textContent = "agente fora do ar"; return; }
   kpis(dados.kpi); graficoDia(dados.por_dia); graficoHora(dados.por_hora); limites(dados.limites);
+  ideiasCard(dados.ideias, dados.autoajuste);
   seguidores(dados.seguidores); grupo(); ultimos(dados.ultimos);
   const j = document.getElementById("janela");
   const al = document.getElementById("alerta-llm");
