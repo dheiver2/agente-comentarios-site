@@ -184,6 +184,23 @@
           <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Itens</h3>
               <div class="card-actions text-secondary small" id="t-contagem"></div></div>
+            <div class="card-body border-bottom py-2 d-print-none">
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                <div class="btn-group btn-group-sm flex-wrap" role="group" aria-label="Status dos itens" id="i-status"></div>
+                <select class="form-select form-select-sm w-auto" id="i-rede" aria-label="Rede dos itens"><option value="">Todas as redes</option></select>
+                <select class="form-select form-select-sm w-auto" id="i-tipo" aria-label="Tipo dos itens">
+                  <option value="">Todos os tipos</option><option value="terceiro">Comentários</option><option value="resposta">Conversas</option>
+                  <option value="post">Posts próprios</option><option value="video">Vídeos</option><option value="dm">DMs</option>
+                </select>
+                <select class="form-select form-select-sm w-auto" id="i-estilo" aria-label="Estilo dos itens"><option value="">Todos os estilos</option></select>
+                <select class="form-select form-select-sm w-auto" id="i-extra" aria-label="Resultado dos itens">
+                  <option value="">Qualquer resultado</option><option value="engajou">Com curtida ou resposta</option><option value="resposta">Com resposta</option>
+                  <option value="sem">Ainda sem medição</option><option value="zero">Medidos sem engajamento</option><option value="nota80">Nota 80 ou mais</option>
+                </select>
+                <input type="search" class="form-control form-control-sm" style="max-width:220px" id="i-busca" placeholder="Buscar nos itens…" aria-label="Buscar nos itens">
+                <a href="#" class="small ms-auto" id="i-limpar">Limpar filtros da tabela</a>
+              </div>
+            </div>
             <div class="card-table table-responsive">
               <table class="table table-vcenter card-table"><thead><tr>
                 <th class="ord desc" data-ord="quando">Quando</th><th>Rede</th><th>Texto</th><th>Estilo</th>
@@ -233,6 +250,9 @@ let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", 
 const POR_PAGINA = 20;
 
 // ---------- filtros (guardados no link: dá para mandar a visão filtrada para alguém) ----------
+const PADRAO_I = () => ({status: "publicado", rede: "", tipo: "", estilo: "", extra: "", q: ""});
+const I = PADRAO_I();
+const STATUS_ABAS = [["", "Todos"], ["publicado", "Publicados"], ["pendente", "Na fila"], ["reprovado", "Reprovados"], ["ignorado", "Descartados"], ["erro", "Com erro"]];
 const PADRAO = () => ({p: 30, redes: new Set(REDES), tipo: "", origem: "", status: "publicado", q: ""});
 const F = PADRAO();
 function lerHash() {
@@ -241,6 +261,9 @@ function lerHash() {
   if (h.get("p")) F.p = +h.get("p") || 30;
   if (h.has("r")) F.redes = new Set(h.get("r").split(",").filter(r => REDES.includes(r)));
   F.tipo = h.get("t") || ""; F.origem = h.get("o") || ""; if (h.has("s")) F.status = h.get("s"); F.q = h.get("q") || "";
+  Object.assign(I, PADRAO_I());
+  if (h.has("is")) I.status = h.get("is");
+  I.rede = h.get("ir") || ""; I.tipo = h.get("it") || ""; I.estilo = h.get("ie") || ""; I.extra = h.get("ix") || ""; I.q = h.get("iq") || "";
 }
 function gravarHash() {
   const h = new URLSearchParams();
@@ -250,6 +273,8 @@ function gravarHash() {
   if (F.origem) h.set("o", F.origem);
   if (F.status !== "publicado") h.set("s", F.status);
   if (F.q) h.set("q", F.q);
+  if (I.status !== "publicado") h.set("is", I.status);
+  for (const [k, v] of [["ir", I.rede], ["it", I.tipo], ["ie", I.estilo], ["ix", I.extra], ["iq", I.q]]) if (v) h.set(k, v);
   const s = h.toString();
   history.replaceState(null, "", s ? "#" + s : location.pathname + location.search);
 }
@@ -274,7 +299,7 @@ function montarControles() {
   fr.addEventListener("click", e => {
     const c = e.target.closest("[data-r]");
     if (e.target.closest("#redes-todas")) F.redes = new Set(F.redes.size === REDES.length ? [] : REDES);
-    else if (e.target.closest("#limpar")) { e.preventDefault(); Object.assign(F, PADRAO()); }
+    else if (e.target.closest("#limpar")) { e.preventDefault(); Object.assign(F, PADRAO()); Object.assign(I, PADRAO_I()); }
     else if (c) {
       const r = c.dataset.r;
       if (e.altKey || e.metaKey) F.redes = new Set([r]);  // ⌥/⌘-clique: só esta rede
@@ -293,6 +318,13 @@ function montarControles() {
   document.getElementById("pag-ant").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); tabela(); });
   document.getElementById("pag-prox").addEventListener("click", () => { pagina++; tabela(); });
   document.getElementById("exportar").addEventListener("click", exportar);
+  const mudouTabela = () => { pagina = 0; gravarHash(); tabela(); };
+  document.getElementById("i-status").addEventListener("click", e => { const b = e.target.closest("[data-is]"); if (b) { I.status = b.dataset.is; mudouTabela(); } });
+  for (const [id, k] of [["i-rede", "rede"], ["i-tipo", "tipo"], ["i-estilo", "estilo"], ["i-extra", "extra"]])
+    document.getElementById(id).addEventListener("change", e => { I[k] = e.target.value; mudouTabela(); });
+  let ti;
+  document.getElementById("i-busca").addEventListener("input", e => { clearTimeout(ti); ti = setTimeout(() => { I.q = e.target.value.trim(); mudouTabela(); }, 250); });
+  document.getElementById("i-limpar").addEventListener("click", e => { e.preventDefault(); Object.assign(I, PADRAO_I()); mudouTabela(); });
   document.getElementById("abas").addEventListener("click", e => {
     const a = e.target.closest("[data-campo]"); if (!a) return; e.preventDefault();
     document.querySelectorAll("#abas .nav-link").forEach(x => x.classList.toggle("active", x === a));
@@ -428,11 +460,42 @@ function ideiasCard(d, aj) {
 }
 
 // ---------- tabela de itens ----------
+const EXTRA = {
+  engajou: i => (i.curtidas || 0) + (i.respostas || 0) > 0,
+  resposta: i => (i.respostas || 0) > 0,
+  sem: i => i.curtidas === null || i.curtidas === undefined,
+  zero: i => i.curtidas !== null && i.curtidas !== undefined && !(i.curtidas || 0) && !(i.respostas || 0),
+  nota80: i => (i.nota || 0) >= 80,
+};
+function itensTabela(comStatus = true) {
+  const q = I.q.toLowerCase();
+  return filtrados(0, false).filter(i => (!comStatus || !I.status || i.status === I.status) && (!I.rede || i.rede === I.rede)
+    && (!I.tipo || i.tipo === I.tipo) && (!I.estilo || (i.estilo || "sem registro") === I.estilo) && (!I.extra || EXTRA[I.extra](i))
+    && (!q || (i.texto || "").toLowerCase().includes(q)));
+}
+function filtrosTabela() {  // opções e contagens seguem o período e os filtros gerais
+  const base = filtrados(0, false), semStatus = itensTabela(false);
+  document.getElementById("i-status").innerHTML = STATUS_ABAS.map(([v, rot]) => {
+    const n = v ? semStatus.filter(i => i.status === v).length : semStatus.length;
+    return `<button type="button" class="btn ${I.status === v ? "active" : ""}" data-is="${v}">${rot}<span class="badge bg-secondary-lt ms-1">${num(n)}</span></button>`;
+  }).join("");
+  const opcoes = (id, valores, rot, atual) => {
+    const el = document.getElementById(id), primeira = el.options[0].outerHTML;
+    el.innerHTML = primeira + valores.map(v => `<option value="${esc(v)}">${esc(rot(v))}</option>`).join("");
+    el.value = valores.includes(atual) ? atual : "";
+  };
+  opcoes("i-rede", REDES.filter(r => base.some(i => i.rede === r)), nome, I.rede);
+  opcoes("i-estilo", [...new Set(base.map(i => i.estilo || "sem registro"))].sort(), v => v, I.estilo);
+  document.getElementById("i-tipo").value = I.tipo;
+  document.getElementById("i-extra").value = I.extra;
+  const b = document.getElementById("i-busca"); if (document.activeElement !== b) b.value = I.q;
+}
 function ordenados() {
   const [k, s] = ordem, val = i => k === "quando" ? quando(i) : (i[k] ?? -1);
-  return filtrados(0).sort((a, b) => s * (val(a) - val(b)));
+  return itensTabela().sort((a, b) => s * (val(a) - val(b)));
 }
 function tabela() {
+  filtrosTabela();
   const l = ordenados(), paginas = Math.max(1, Math.ceil(l.length / POR_PAGINA));
   pagina = Math.min(pagina, paginas - 1);
   document.querySelectorAll("th.ord").forEach(th => { th.classList.remove("asc", "desc"); if (th.dataset.ord === ordem[0]) th.classList.add(ordem[1] > 0 ? "asc" : "desc"); });
@@ -448,7 +511,8 @@ function tabela() {
       <td class="text-secondary">${esc(i.estilo || "–")}</td><td class="text-end">${traco(i.nota)}</td>
       <td class="text-end">${traco(i.curtidas)}</td><td class="text-end">${traco(i.respostas)}</td></tr>`;
   }).join("") || '<tr><td colspan="7" class="vazio">Nenhum item com esses filtros.</td></tr>';
-  document.getElementById("t-contagem").textContent = `${num(l.length)} itens`;
+  const ativos = [I.rede, I.tipo, I.estilo, I.extra, I.q].filter(Boolean).length + (I.status !== "publicado" ? 1 : 0);
+  document.getElementById("t-contagem").textContent = `${num(l.length)} itens` + (ativos ? ` · ${ativos} ${ativos === 1 ? "filtro" : "filtros"} na tabela` : "");
   document.getElementById("pag-info").textContent = l.length ? `${pagina * POR_PAGINA + 1}–${Math.min(l.length, (pagina + 1) * POR_PAGINA)} de ${num(l.length)}` : "";
   document.getElementById("pag-ant").disabled = pagina === 0;
   document.getElementById("pag-prox").disabled = pagina >= paginas - 1;
