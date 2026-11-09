@@ -566,7 +566,7 @@ const compacto = n => n === null || n === undefined ? "–" : n >= 1e6 ? (n / 1e
 function pontosAlvo(i) {
   if (i.tipo !== "terceiro") return '<span class="text-secondary">–</span>';
   const p = (v, rot) => `<span class="ponto me-1" style="background:${v === true ? "var(--tblr-green)" : v === false ? "var(--tblr-red)" : "var(--tblr-border-color)"}" title="${rot}: ${v === true ? "sim" : v === false ? "não" : "sem medida"}"></span>`;
-  const extra = [i.post_views ? compacto(i.post_views) + " views" : i.post_interacoes != null ? compacto(i.post_interacoes) + " interações" : "", i.autor_seguidores != null ? compacto(i.autor_seguidores) + " seg." : ""].filter(Boolean).join(" · ");
+  const extra = [i.views != null ? compacto(i.views) + " viram seu comentário" : "", i.post_views ? compacto(i.post_views) + " views" : i.post_interacoes != null ? compacto(i.post_interacoes) + " interações" : "", i.autor_seguidores != null ? compacto(i.autor_seguidores) + " seg." : ""].filter(Boolean).join(" · ");
   return p(i.alvo_relevante, "Post relevante") + p(i.alvo_visivel, "Alta visibilidade") + p(i.alvo_pessoa, "Pessoa relevante") + (extra ? `<div class="text-secondary small">${extra}</div>` : "");
 }
 function alvos(l) {
