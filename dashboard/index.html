@@ -12,7 +12,10 @@
 <style>
   :root { --tblr-primary: #E94A12; --tblr-primary-rgb: 233, 74, 18; --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; }
   body { font-feature-settings: "tnum"; }
-  .texto-com { max-width: 560px; white-space: normal; font-size: .8125rem; color: var(--tblr-secondary); }
+  .texto-com { max-width: 620px; white-space: normal; font-size: .8125rem; color: var(--tblr-secondary);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .page-header { margin-top: .75rem; } .page-body { margin-top: .75rem; margin-bottom: .75rem; }
+  #limites .mb-3 { margin-bottom: .55rem !important; }
   .rede-badge { min-width: 86px; }
   .barra-limite { height: .4rem; }
   .vazio { color: var(--tblr-secondary); font-size: .875rem; padding: 1.5rem; text-align: center; }
@@ -51,11 +54,21 @@
         <div class="row g-2 align-items-center">
           <div class="col">
             <div class="page-pretitle">Autoridade em IA · 9 redes</div>
-            <h2 class="page-title">Performance</h2>
+            <h2 class="page-title" id="titulo-pagina">Visão geral</h2>
           </div>
           <div class="col-auto d-flex align-items-center gap-2">
             <span class="text-secondary small" id="atualizado"></span>
             <button class="btn btn-sm" id="exportar" title="Baixar os itens filtrados em CSV">Exportar CSV</button>
+          </div>
+          <div class="col-12">
+            <ul class="nav nav-pills gap-1" id="paginas" role="tablist" aria-label="Páginas do dashboard">
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="geral" role="tab">Visão geral</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="seguidores" role="tab">Seguidores</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="alvos" role="tab">Alvos</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="resultados" role="tab">Resultados</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="itens" role="tab">Itens <span class="badge bg-secondary-lt ms-1" id="pg-itens-n"></span></a></li>
+              <li class="nav-item d-none" id="pg-pautas-item"><a class="nav-link" href="#" data-pg="pautas" role="tab">Pautas</a></li>
+            </ul>
           </div>
         </div>
       </div>
@@ -131,11 +144,16 @@
             <div class="h1 mb-0" id="k-seg">–</div>
             <div class="text-secondary small mt-1" id="k-seg-sub">–</div>
           </div></div></div>
+          <div class="col-12 col-lg"><div class="card"><div class="card-body">
+            <div class="subheader" title="Comentários em post relevante, com alta visibilidade e de autor com muitos seguidores (só conta o que deu para medir)">Alvos de qualidade</div>
+            <div class="h1 mb-0" id="k-alvo">–</div>
+            <div class="text-secondary small mt-1" id="k-alvo-sub">–</div>
+          </div></div></div>
           <div class="w-100 m-0 p-0"></div>
 
           <div class="col-lg-8"><div class="card">
             <div class="card-header"><h3 class="card-title">Publicados por dia e rede</h3></div>
-            <div class="card-body"><div id="g-dia" style="min-height:280px"></div></div>
+            <div class="card-body"><div id="g-dia" style="min-height:250px"></div></div>
           </div></div>
 
           <div class="col-lg-4"><div class="card">
@@ -143,11 +161,11 @@
             <div class="card-body" id="limites"></div>
           </div></div>
 
-          <div class="col-lg-7"><div class="card">
+          <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Seguidores no período</h3>
               <div class="card-actions text-secondary small">1× por dia · Reddit = karma · Facebook = amigos</div></div>
             <div class="card-table table-responsive">
-              <table class="table table-vcenter"><thead><tr><th>Rede</th><th>Tendência</th><th class="text-end">Início</th><th class="text-end">Hoje</th><th class="text-end">Saldo</th></tr></thead>
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th>Tendência</th><th class="text-end">Início</th><th class="text-end">Hoje</th><th class="text-end">Saldo</th></tr></thead>
               <tbody id="t-seguidores"></tbody></table>
             </div>
           </div></div>
@@ -158,7 +176,7 @@
             <div class="card-body"><div id="g-hora" style="min-height:240px"></div></div>
           </div></div>
 
-          <div class="col-12"><div class="card">
+          <div class="col-lg-7"><div class="card">
             <div class="card-header">
               <ul class="nav nav-tabs card-header-tabs" id="abas">
                 <li class="nav-item"><a href="#" class="nav-link active" data-campo="rede">Por rede</a></li>
@@ -171,6 +189,28 @@
               <table class="table table-vcenter"><thead><tr><th>Grupo</th><th class="text-end">Publicados</th><th class="text-end">Medidos</th>
                 <th class="text-end">Curtidas</th><th class="text-end">Média</th><th class="text-end">Respostas</th><th class="text-end">% com resposta</th><th class="text-end">Nota média</th></tr></thead>
               <tbody id="t-grupo"></tbody></table>
+            </div>
+          </div></div>
+
+          <!-- qualidade dos alvos -->
+          <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">Onde a voz está aparecendo</h3>
+              <div class="card-actions text-secondary small">post relevante: relevância ≥ 70 % no Brier · visível: interações acima do limiar da rede ou post subindo rápido · pessoa relevante: autor com ≥ 10 mil seguidores</div></div>
+            <div class="card-body"><div class="row g-3" id="a-resumo"></div></div>
+          </div></div>
+          <div class="col-lg-7"><div class="card">
+            <div class="card-header"><h3 class="card-title">Por rede</h3></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Coment.</th><th class="text-end" title="post relevante">Relevantes</th><th class="text-end" title="alta visibilidade">Visíveis</th>
+                <th class="text-end" title="autor com ≥ 10 mil seguidores">Pessoa</th><th class="text-end" title="mediana das interações do post na hora do comentário">Interações</th><th class="text-end" title="mediana dos seguidores do autor do post">Seguidores</th></tr></thead>
+              <tbody id="t-alvos"></tbody></table>
+            </div>
+          </div></div>
+          <div class="col-lg-5"><div class="card">
+            <div class="card-header"><h3 class="card-title">Maiores perfis comentados</h3></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Autor</th><th class="text-end">Seguidores</th><th class="text-end">Interações do post</th></tr></thead>
+              <tbody id="t-maiores"></tbody></table>
             </div>
           </div></div>
 
@@ -196,6 +236,7 @@
                 <select class="form-select form-select-sm w-auto" id="i-extra" aria-label="Resultado dos itens">
                   <option value="">Qualquer resultado</option><option value="engajou">Com curtida ou resposta</option><option value="resposta">Com resposta</option>
                   <option value="sem">Ainda sem medição</option><option value="zero">Medidos sem engajamento</option><option value="nota80">Nota 80 ou mais</option>
+                  <option value="alvo">Alvo de qualidade</option><option value="invisivel">Post pouco visível</option><option value="irrelevante">Post pouco relevante</option>
                 </select>
                 <input type="search" class="form-control form-control-sm" style="max-width:220px" id="i-busca" placeholder="Buscar nos itens…" aria-label="Buscar nos itens">
                 <a href="#" class="small ms-auto" id="i-limpar">Limpar filtros da tabela</a>
@@ -204,7 +245,7 @@
             <div class="card-table table-responsive">
               <table class="table table-vcenter card-table"><thead><tr>
                 <th class="ord desc" data-ord="quando">Quando</th><th>Rede</th><th>Texto</th><th>Estilo</th>
-                <th class="ord text-end" data-ord="nota">Nota</th><th class="ord text-end" data-ord="curtidas">Curtidas</th><th class="ord text-end" data-ord="respostas">Respostas</th></tr></thead>
+                <th title="post relevante · alta visibilidade · pessoa relevante">Alvo</th><th class="ord text-end" data-ord="nota">Nota</th><th class="ord text-end" data-ord="curtidas">Curtidas</th><th class="ord text-end" data-ord="respostas">Respostas</th></tr></thead>
               <tbody id="t-itens"></tbody></table>
             </div>
             <div class="card-footer d-flex align-items-center">
@@ -216,7 +257,7 @@
         </div>
       </div>
     </div>
-    <footer class="footer footer-transparent d-print-none">
+    <footer class="footer footer-transparent d-print-none d-none">
       <div class="container-xl text-secondary small"><span id="rodape">Atualiza sozinho a cada 60 s · dados do banco local do agente · ⌥-clique numa rede mostra só ela</span></div>
     </footer>
   </div>
@@ -247,7 +288,38 @@ const escuro = () => document.documentElement.getAttribute("data-bs-theme") === 
 if (PUBLICO) document.getElementById("link-painel").remove();
 
 let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", -1], pagina = 0;
-const POR_PAGINA = 20;
+let POR_PAGINA = 10;
+// ---------- páginas (cada uma cabe na tela, sem rolar) ----------
+const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-seguidores"],
+  alvos: ["a-resumo", "t-alvos", "t-maiores"],
+  resultados: ["g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
+const ROTULOS = {geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
+let pg = "geral";
+function marcarPaginas() {
+  const linha = document.querySelector(".row-cards");
+  for (const [p, ids] of Object.entries(PAGINAS))
+    for (const id of ids) { let el = document.getElementById(id); while (el && el.parentElement !== linha) el = el.parentElement; if (el) el.dataset.pg = p; }
+  [...linha.children].forEach(c => { if (!c.dataset.pg) c.dataset.pg = "geral"; });  // quebra de linha dos indicadores
+}
+function linhasQueCabem() {  // quantos itens cabem na tela até o rodapé da tabela
+  const t = document.getElementById("t-itens");
+  if (!t.offsetParent) return POR_PAGINA;
+  const topo = t.getBoundingClientRect().top + scrollY;
+  return Math.max(5, Math.min(25, Math.floor((innerHeight - topo - 75) / 66)));
+}
+function mostrarPagina() {
+  if (pg === "pautas" && document.getElementById("pg-pautas-item").classList.contains("d-none")) pg = "geral";
+  document.querySelectorAll(".row-cards > [data-pg]").forEach(c => c.classList.toggle("d-none", c.dataset.pg !== pg));
+  document.querySelectorAll("#paginas [data-pg]").forEach(a => { const on = a.dataset.pg === pg; a.classList.toggle("active", on); a.setAttribute("aria-selected", on); });
+  document.getElementById("titulo-pagina").textContent = ROTULOS[pg];
+  scrollTo(0, 0);
+  dispatchEvent(new Event("resize"));  // gráficos que estavam escondidos se redesenham com a largura certa
+  if (pg === "itens" && dados) encaixar();
+}
+function encaixar() {  // começa no que a conta estima e tira linhas até a página caber na tela
+  POR_PAGINA = linhasQueCabem() + 3; tabela();
+  while (document.documentElement.scrollHeight > innerHeight + 1 && POR_PAGINA > 3) { POR_PAGINA--; tabela(); }
+}
 
 // ---------- filtros (guardados no link: dá para mandar a visão filtrada para alguém) ----------
 const PADRAO_I = () => ({status: "publicado", rede: "", tipo: "", estilo: "", extra: "", q: ""});
@@ -262,6 +334,7 @@ function lerHash() {
   if (h.has("r")) F.redes = new Set(h.get("r").split(",").filter(r => REDES.includes(r)));
   F.tipo = h.get("t") || ""; F.origem = h.get("o") || ""; if (h.has("s")) F.status = h.get("s"); F.q = h.get("q") || "";
   Object.assign(I, PADRAO_I());
+  pg = PAGINAS[h.get("v")] ? h.get("v") : "geral";
   if (h.has("is")) I.status = h.get("is");
   I.rede = h.get("ir") || ""; I.tipo = h.get("it") || ""; I.estilo = h.get("ie") || ""; I.extra = h.get("ix") || ""; I.q = h.get("iq") || "";
 }
@@ -273,6 +346,7 @@ function gravarHash() {
   if (F.origem) h.set("o", F.origem);
   if (F.status !== "publicado") h.set("s", F.status);
   if (F.q) h.set("q", F.q);
+  if (pg !== "geral") h.set("v", pg);
   if (I.status !== "publicado") h.set("is", I.status);
   for (const [k, v] of [["ir", I.rede], ["it", I.tipo], ["ie", I.estilo], ["ix", I.extra], ["iq", I.q]]) if (v) h.set(k, v);
   const s = h.toString();
@@ -318,6 +392,11 @@ function montarControles() {
   document.getElementById("pag-ant").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); tabela(); });
   document.getElementById("pag-prox").addEventListener("click", () => { pagina++; tabela(); });
   document.getElementById("exportar").addEventListener("click", exportar);
+  document.getElementById("paginas").addEventListener("click", e => {
+    const a = e.target.closest("[data-pg]"); if (!a) return; e.preventDefault();
+    pg = a.dataset.pg; gravarHash(); mostrarPagina();
+  });
+  let tr; addEventListener("resize", () => { clearTimeout(tr); tr = setTimeout(() => { if (pg === "itens" && dados) encaixar(); }, 200); });
   const mudouTabela = () => { pagina = 0; gravarHash(); tabela(); };
   document.getElementById("i-status").addEventListener("click", e => { const b = e.target.closest("[data-is]"); if (b) { I.status = b.dataset.is; mudouTabela(); } });
   for (const [id, k] of [["i-rede", "rede"], ["i-tipo", "tipo"], ["i-estilo", "estilo"], ["i-extra", "extra"]])
@@ -377,7 +456,7 @@ function graficoDia(l) {
   for (let t = inicio(0); t <= Date.now() / 1000; t += 86400) dias.push(dia(t + 3600));
   const pub = l.filter(i => i.status === "publicado"), redes = REDES.filter(r => pub.some(i => i.rede === r));
   const series = redes.map(r => ({name: nome(r), data: dias.map(d => pub.filter(i => i.rede === r && dia(quando(i)) === d).length)}));
-  const opt = {chart: {type: "bar", stacked: true, height: 280, toolbar: {show: false}, fontFamily: "inherit", background: "transparent", foreColor: corTexto(), animations: {enabled: false}},
+  const opt = {chart: {type: "bar", stacked: true, height: 250, toolbar: {show: false}, fontFamily: "inherit", background: "transparent", foreColor: corTexto(), animations: {enabled: false}},
     theme: {mode: escuro() ? "dark" : "light"}, series, colors: redes.map(r => CORES[r]),
     plotOptions: {bar: {columnWidth: dias.length > 40 ? "80%" : "50%", borderRadius: 2}}, dataLabels: {enabled: false},
     xaxis: {categories: dias.map(d => d.slice(8, 10) + "/" + d.slice(5, 7)), labels: {rotate: 0, hideOverlappingLabels: true}},
@@ -396,6 +475,50 @@ function graficoHora(l) {
     plotOptions: {bar: {columnWidth: "55%", borderRadius: 2}}, legend: {position: "bottom"}, tooltip: {theme: escuro() ? "dark" : "light"},
     yaxis: [{labels: {formatter: v => Math.round(v)}}, {opposite: true, labels: {formatter: v => v === null || v === undefined ? "" : v.toFixed(1)}}]};
   if (gHora) gHora.updateOptions(opt, true, false); else (gHora = new ApexCharts(document.getElementById("g-hora"), opt)).render();
+}
+
+// ---------- qualidade dos alvos ----------
+// alvo de qualidade = todos os critérios medidos são verdadeiros (precisa ao menos de relevância e visibilidade medidas)
+function qualidade(i) {
+  const c = [i.alvo_relevante, i.alvo_visivel, i.alvo_pessoa].filter(v => v !== null && v !== undefined);
+  if (i.alvo_relevante == null || (i.alvo_visivel == null && i.alvo_pessoa == null)) return null;
+  return c.every(Boolean);
+}
+const pct = (l, k) => { const m = l.filter(i => i[k] !== null && i[k] !== undefined); return m.length ? Math.round(100 * m.filter(i => i[k]).length / m.length) : null; };
+const mediana = v => { v = v.filter(x => x !== null && x !== undefined).sort((a, b) => a - b); return v.length ? v[Math.floor((v.length - 1) / 2)] : null; };
+const compacto = n => n === null || n === undefined ? "–" : n >= 1e6 ? (n / 1e6).toFixed(1).replace(".", ",") + " mi" : n >= 1e4 ? Math.round(n / 1e3) + " mil" : num(n);
+function pontosAlvo(i) {
+  if (i.tipo !== "terceiro") return '<span class="text-secondary">–</span>';
+  const p = (v, rot) => `<span class="ponto me-1" style="background:${v === true ? "var(--tblr-green)" : v === false ? "var(--tblr-red)" : "var(--tblr-border-color)"}" title="${rot}: ${v === true ? "sim" : v === false ? "não" : "sem medida"}"></span>`;
+  const extra = [i.post_views ? compacto(i.post_views) + " views" : i.post_interacoes != null ? compacto(i.post_interacoes) + " interações" : "", i.autor_seguidores != null ? compacto(i.autor_seguidores) + " seg." : ""].filter(Boolean).join(" · ");
+  return p(i.alvo_relevante, "Post relevante") + p(i.alvo_visivel, "Alta visibilidade") + p(i.alvo_pessoa, "Pessoa relevante") + (extra ? `<div class="text-secondary small">${extra}</div>` : "");
+}
+function alvos(l) {
+  const com = l.filter(i => i.status === "publicado" && i.tipo === "terceiro");
+  const q = com.map(qualidade).filter(v => v !== null), qp = q.length ? Math.round(100 * q.filter(Boolean).length / q.length) : null;
+  const k = document.getElementById("k-alvo");
+  k.textContent = qp === null ? "–" : qp + "%";
+  k.className = "h1 mb-0 " + (qp === null ? "" : qp >= 50 ? "text-green" : qp >= 25 ? "text-orange" : "text-red");
+  const pr = pct(com, "alvo_relevante"), pv = pct(com, "alvo_visivel"), pp = pct(com, "alvo_pessoa");
+  const f = v => v === null ? "–" : v + "%";
+  document.getElementById("k-alvo-sub").textContent = `relevante ${f(pr)} · visível ${f(pv)} · pessoa ${f(pp)}`;
+  const bloco = (rot, v, n, dica) => `<div class="col-6 col-lg-3"><div class="border rounded p-3 h-100"><div class="subheader">${rot}</div>
+    <div class="h1 mb-1">${f(v)}</div><div class="progress progress-sm mb-2"><div class="progress-bar" style="width:${v || 0}%;background:var(--tblr-primary)"></div></div>
+    <div class="text-secondary small">${dica} · ${n} medidos</div></div></div>`;
+  const med = k => com.filter(i => i[k] !== null && i[k] !== undefined).length;
+  document.getElementById("a-resumo").innerHTML = bloco("Alvos de qualidade", qp, q.length, "tudo o que foi medido bate") + bloco("Post relevante", pr, med("alvo_relevante"), "tema de IA, segundo o Brier")
+    + bloco("Alta visibilidade", pv, med("alvo_visivel"), "post com tração na hora") + bloco("Pessoa relevante", pp, med("alvo_pessoa"), "autor com ≥ 10 mil seguidores");
+  const por = {}; com.forEach(i => (por[i.rede] = por[i.rede] || []).push(i));
+  document.getElementById("t-alvos").innerHTML = REDES.filter(r => por[r]).map(r => {
+    const g = por[r], c = v => v === null ? '<span class="text-secondary">–</span>' : `<span class="${v >= 50 ? "text-green" : v >= 25 ? "text-orange" : "text-red"}">${v}%</span>`;
+    return `<tr><td class="text-nowrap">${ponto(r)}${nome(r)}</td><td class="text-end">${g.length}</td><td class="text-end">${c(pct(g, "alvo_relevante"))}</td>
+      <td class="text-end">${c(pct(g, "alvo_visivel"))}</td><td class="text-end">${c(pct(g, "alvo_pessoa"))}</td>
+      <td class="text-end">${compacto(mediana(g.map(i => i.post_interacoes)))}</td><td class="text-end">${compacto(mediana(g.map(i => i.autor_seguidores)))}</td></tr>`;
+  }).join("") || '<tr><td colspan="7" class="vazio">Nenhum comentário com esses filtros.</td></tr>';
+  const maiores = com.filter(i => i.autor_seguidores).sort((a, b) => b.autor_seguidores - a.autor_seguidores).slice(0, 8);
+  document.getElementById("t-maiores").innerHTML = maiores.map(i => `<tr><td class="text-nowrap">${ponto(i.rede)}${i.autor ? esc(i.autor) : nome(i.rede)}</td>
+    <td class="text-end">${compacto(i.autor_seguidores)}</td><td class="text-end">${compacto(i.post_views || i.post_interacoes)}</td></tr>`).join("")
+    || '<tr><td colspan="3" class="vazio">Ainda lendo os perfis dos autores.</td></tr>';
 }
 
 // ---------- cartões ----------
@@ -450,8 +573,9 @@ function grupo() {
 }
 function ideiasCard(d, aj) {
   const el = document.getElementById("bloco-ideias");
-  if (!d || !d.pautas || !d.pautas.length) { el.style.display = "none"; return; }
-  el.style.display = "";
+  const nav = document.getElementById("pg-pautas-item");
+  if (!d || !d.pautas || !d.pautas.length) { el.style.display = "none"; nav.classList.add("d-none"); return; }
+  el.style.display = ""; nav.classList.remove("d-none");
   document.getElementById("autoajuste").textContent = (aj || "") + " · pautas de " + d.dia.split("-").reverse().join("/");
   document.getElementById("ideias").innerHTML = d.pautas.map(p => `<div class="col-md-4"><div class="border rounded p-3 h-100">
     <span class="badge bg-orange-lt mb-2">${esc(p.formato)}</span><h4 class="mb-1">${esc(p.titulo)}</h4>
@@ -466,6 +590,9 @@ const EXTRA = {
   sem: i => i.curtidas === null || i.curtidas === undefined,
   zero: i => i.curtidas !== null && i.curtidas !== undefined && !(i.curtidas || 0) && !(i.respostas || 0),
   nota80: i => (i.nota || 0) >= 80,
+  alvo: i => qualidade(i) === true,
+  invisivel: i => i.alvo_visivel === false,
+  irrelevante: i => i.alvo_relevante === false,
 };
 function itensTabela(comStatus = true) {
   const q = I.q.toLowerCase();
@@ -507,11 +634,12 @@ function tabela() {
     const st = i.status !== "publicado" ? `<span class="badge bg-${(STATUS[i.status] || ["", "secondary"])[1]}-lt ms-1">${esc((STATUS[i.status] || [i.status])[0])}</span>` : "";
     return `<tr><td class="text-nowrap text-secondary">${q}</td>
       <td class="text-nowrap"><span class="badge rede-badge text-white" style="background:${CORES[i.rede] || "#999"}">${nome(i.rede)}</span>${tipo}${radar}${st}</td>
-      <td>${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener" class="texto-com d-block text-reset">${esc(i.texto)}</a>` : `<span class="texto-com d-block">${esc(i.texto)}</span>`}</td>
-      <td class="text-secondary">${esc(i.estilo || "–")}</td><td class="text-end">${traco(i.nota)}</td>
+      <td>${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener" class="texto-com text-reset" title="${esc(i.texto)}">${esc(i.texto)}</a>` : `<span class="texto-com" title="${esc(i.texto)}">${esc(i.texto)}</span>`}</td>
+      <td class="text-secondary">${esc(i.estilo || "–")}</td><td class="text-nowrap">${pontosAlvo(i)}</td><td class="text-end">${traco(i.nota)}</td>
       <td class="text-end">${traco(i.curtidas)}</td><td class="text-end">${traco(i.respostas)}</td></tr>`;
-  }).join("") || '<tr><td colspan="7" class="vazio">Nenhum item com esses filtros.</td></tr>';
+  }).join("") || '<tr><td colspan="8" class="vazio">Nenhum item com esses filtros.</td></tr>';
   const ativos = [I.rede, I.tipo, I.estilo, I.extra, I.q].filter(Boolean).length + (I.status !== "publicado" ? 1 : 0);
+  document.getElementById("pg-itens-n").textContent = num(l.length);
   document.getElementById("t-contagem").textContent = `${num(l.length)} itens` + (ativos ? ` · ${ativos} ${ativos === 1 ? "filtro" : "filtros"} na tabela` : "");
   document.getElementById("pag-info").textContent = l.length ? `${pagina * POR_PAGINA + 1}–${Math.min(l.length, (pagina + 1) * POR_PAGINA)} de ${num(l.length)}` : "";
   document.getElementById("pag-ant").disabled = pagina === 0;
@@ -536,7 +664,7 @@ function aplicar() {
   const comparar = F.p < 90;  // 90 dias = tudo o que o painel guarda: não há período anterior
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); seguidores(dados.seguidores || []); grupo(); tabela();
+  limites(dados.limites || {}); seguidores(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
@@ -545,6 +673,7 @@ async function carregar() {
   if (!dados.itens) dados.itens = (dados.ultimos || []).map(i => ({...i, status: "publicado", origem: i.tipo === "resposta" ? "conversa" : "turno"}));
   const pg = pagina; aplicar(); pagina = pg; tabela();
   ideiasCard(dados.ideias, dados.autoajuste);
+  if (!carregar.feito) { carregar.feito = true; mostrarPagina(); }  // 1ª carga: abre a página do link (e mede quantos itens cabem)
   const j = document.getElementById("janela"), al = document.getElementById("alerta-llm");
   if (dados.llm && !dados.llm.ok) { al.classList.remove("d-none"); al.querySelector("span").textContent = dados.llm.detalhe.slice(0, 60); }
   else al.classList.add("d-none");
@@ -555,13 +684,14 @@ async function carregar() {
   document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
 }
 
-lerHash(); montarControles(); sincronizarControles();
-addEventListener("hashchange", () => { lerHash(); aplicar(); });
+lerHash(); marcarPaginas(); montarControles(); sincronizarControles(); mostrarPagina();
+addEventListener("hashchange", () => { lerHash(); aplicar(); mostrarPagina(); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
   document.documentElement.setAttribute("data-bs-theme", e.matches ? "dark" : "light");
   if (dados) { graficoDia(filtrados(0)); graficoHora(filtrados(0)); }
 });
 if (PUBLICO) document.getElementById("rodape").textContent = "Números reais do agente, publicados 1× por dia · sem links nem contas · ⌥-clique numa rede mostra só ela";
+document.getElementById("atualizado").title = document.getElementById("rodape").textContent;  // o rodapé saiu para caber na tela
 carregar(); setInterval(carregar, 60000);
 </script>
 </body>
