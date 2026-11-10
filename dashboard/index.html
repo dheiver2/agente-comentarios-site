@@ -697,7 +697,7 @@ function seguindo(sg, serie) {
   set("sg-hoje", `${num(Object.entries(hoje).filter(([r]) => F.redes.has(r)).reduce((a, [, v]) => a + v, 0))} / ${num(teto)}`);
   const med = so("medivel"), dv = so("de_volta");
   set("sg-volta", med ? Math.round(100 * dv / med) + "%" : "–"); set("sg-volta-sub", med ? `${dv} de ${med} no X e Bluesky` : "X e Bluesky, 7 dias depois");
-  set("sg-fila", num(sg.fila || 0));
+  set("sg-fila", num(sg.fila_rede ? Object.entries(sg.fila_rede).filter(([r]) => F.redes.has(r)).reduce((a, [, v]) => a + v, 0) : sg.fila || 0));
   const inicioRede = {}; (sg.por_dia || []).forEach(d => { if (!inicioRede[d.rede] || d.dia < inicioRede[d.rede]) inicioRede[d.rede] = d.dia; });
   const desde = r => { const l = serie.filter(x => x.rede === r && x.dia >= (inicioRede[r] || "9")); if (l.length < 2) return '<span class="text-secondary">aguardando</span>';
     const d = l[l.length - 1].valor - l[0].valor; return `<span class="${d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary"}">${d > 0 ? "+" : ""}${num(d)}</span>`; };
