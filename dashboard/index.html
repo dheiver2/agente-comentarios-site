@@ -713,7 +713,7 @@ function autoria(au) {
   set("au-achados", num(ac.total || 0)); set("au-achados-sub", `${num(ac.usados || 0)} já viraram post`);
   set("au-resp", num(au.respostas_nos_posts || 0));
   const nl = au.newsletter || {};
-  set("au-news", num(nl.edicoes || 0)); set("au-news-sub", nl.ultima ? "última: " + nl.ultima : "Notas de Bancada · toda sexta");
+  set("au-news", num(nl.edicoes || 0)); set("au-news-sub", (nl.inscritos != null ? num(nl.inscritos) + " inscritos · " : "") + (nl.ultima ? "última: " + nl.ultima : "Notas de Bancada · toda sexta"));
   const tr = v => v ? num(v) : '<span class="text-secondary">–</span>';
   document.getElementById("t-autoria").innerHTML = REDES.map(r => pr.find(x => x.rede === r)).filter(Boolean).map(r => `<tr><td class="text-nowrap">${ponto(r.rede)}${nome(r.rede)}</td>
     <td class="text-end">${tr(r.achado)}</td><td class="text-end">${tr(r.noticia)}</td><td class="text-end">${tr(r.reprovados)}</td>
@@ -773,9 +773,10 @@ function seguidores(s) {
   let saldo = 0, n = 0;
   const linhas = REDES.filter(r => por[r]).map(r => {
     const tudo = por[r], v = tudo.filter(l => l.dia >= desde), base = v.length ? v : tudo.slice(-1);
-    const a = base[0].valor, b = base[base.length - 1].valor, d = b - a; saldo += d; n++;
+    const a = base[0].valor, b = base[base.length - 1].valor, d = b - a;
+    if (r !== "tabnews") { saldo += d; n++; }  // TabNews não tem seguidores: a linha mostra tabcoins e fica fora do saldo
     const cls = d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary";
-    return `<tr><td class="text-nowrap">${ponto(r)}${nome(r)}</td><td>${spark(base.map(x => x.valor), CORES[r])}</td>
+    return `<tr><td class="text-nowrap">${ponto(r)}${nome(r)}${r === "tabnews" ? ' <span class="text-secondary small">(tabcoins)</span>' : r === "substack" ? ' <span class="text-secondary small">(inscritos)</span>' : ""}</td><td>${spark(base.map(x => x.valor), CORES[r])}</td>
       <td class="text-end">${num(a)}<div class="text-secondary small">${base[0].dia.slice(8, 10)}/${base[0].dia.slice(5, 7)}</div></td>
       <td class="text-end">${num(b)}</td><td class="text-end ${cls}">${d > 0 ? "+" : ""}${num(d)}</td></tr>`;
   });
