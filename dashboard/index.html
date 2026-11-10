@@ -77,6 +77,7 @@
               <li class="nav-item"><a class="nav-link" href="#" data-pg="seguidores" role="tab">Seguidores</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="seguindo" role="tab">Seguindo</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="autoria" role="tab">Autoridade</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="engajamento" role="tab">Engajamento</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="alvos" role="tab">Alvos</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="resultados" role="tab">Resultados</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="itens" role="tab">Itens <span class="badge bg-secondary-lt ms-1" id="pg-itens-n"></span></a></li>
@@ -243,6 +244,40 @@
             <div class="card-header"><h3 class="card-title">Medido em bancada</h3>
               <div class="card-actions small" id="au-marca"></div></div>
             <div class="list-group list-group-flush" id="l-achados"></div>
+          </div></div>
+
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Seguidores ganhos no período ÷ impressões somadas × 1000. É o que diz se a visibilidade vira público.">Seguidores / mil impressões</div>
+            <div class="h1 mb-0" id="en-conv">–</div><div class="text-secondary small mt-1" id="en-conv-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Média de visualizações por publicação medida: post próprio × comentário">Views por ação</div>
+            <div class="h1 mb-0" id="en-vpa">–</div><div class="text-secondary small mt-1" id="en-vpa-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Comentários medidos que receberam ao menos uma resposta">Taxa de conversa</div>
+            <div class="h1 mb-0" id="en-conversa">–</div><div class="text-secondary small mt-1" id="en-conversa-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Views médias de comentários feitos na 1ª hora do post × depois de 6 h">Velocidade de entrada</div>
+            <div class="h1 mb-0" id="en-vel">–</div><div class="text-secondary small mt-1" id="en-vel-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Comentários que a medição não achou mais na página (enterrados ou apagados)">Taxa de enterrado</div>
+            <div class="h1 mb-0" id="en-ent">–</div><div class="text-secondary small mt-1" id="en-ent-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Autores comentados que responderam a você ou seguiram de volta">Reciprocidade</div>
+            <div class="h1 mb-0" id="en-rec">–</div><div class="text-secondary small mt-1" id="en-rec-sub">–</div></div></div></div>
+          <div class="col-lg-8"><div class="card">
+            <div class="card-header"><h3 class="card-title">Engajamento por rede</h3>
+              <div class="card-actions text-secondary small">só o que foi medido · "–" = sem dado ainda</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Impressões</th>
+                <th class="text-end" title="seguidores ganhos ÷ impressões × 1000">Seg./mil imp.</th>
+                <th class="text-end">Views/comentário</th><th class="text-end">Views/post</th>
+                <th class="text-end">Conversa</th><th class="text-end">Enterrado</th><th class="text-end">Reciprocidade</th></tr></thead>
+              <tbody id="t-engaj"></tbody></table>
+            </div>
+          </div></div>
+          <div class="col-lg-4"><div class="card">
+            <div class="card-header"><h3 class="card-title">Qualidade e autoridade</h3></div>
+            <div class="card-body small" id="en-apoio"></div>
           </div></div>
 
           <div class="col-lg-5"><div class="card">
@@ -434,9 +469,10 @@ let POR_PAGINA = 10;
 const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-seguidores"],
   seguindo: ["sg-total", "sg-hoje", "sg-volta", "sg-fila", "t-seguindo", "t-seguindo-origem"],
   autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
+  engajamento: ["en-conv", "en-vpa", "en-conversa", "en-vel", "en-ent", "en-rec", "t-engaj", "en-apoio"],
   alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
   resultados: ["g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
-const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
+const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", engajamento: "Engajamento", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
   const linha = document.querySelector(".row-cards");
@@ -749,6 +785,58 @@ function autoria(au) {
     + (au.readme ? ` · <a href="https://github.com/dheiver2" target="_blank" rel="noopener" title="README do GitHub atualizado em ${esc(au.readme)}">GitHub</a>` : "");
 }
 
+
+// ---------- engajamento: indicadores que mudam decisões ----------
+function engajamento(serie) {
+  const set = (id, v) => document.getElementById(id).textContent = v;
+  const pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "–", med = l => l.length ? l.reduce((a, b) => a + b, 0) / l.length : null;
+  const ini = inicio(0), desde = dia(ini + 3600), base = filtrados(0, false), pub = base.filter(i => i.status === "publicado");
+  const com = pub.filter(i => i.tipo === "terceiro"), posts = pub.filter(i => i.tipo === "post");
+  const medidos = l => l.filter(i => i.curtidas !== null && i.curtidas !== undefined);
+  const vis = l => l.filter(i => i.views !== null && i.views !== undefined).map(i => i.views);
+  const ganho = r => { const l = (serie || []).filter(x => x.rede === r && x.dia >= desde); return l.length >= 2 ? l[l.length - 1].valor - l[0].valor : null; };
+  const linhas = REDES.filter(r => F.redes.has(r) && r !== "tabnews").map(r => {
+    const c = com.filter(i => i.rede === r), p = posts.filter(i => i.rede === r), todos = pub.filter(i => i.rede === r);
+    const imp = vis(todos).reduce((a, b) => a + b, 0), g = ganho(r), mc = medidos(c);
+    const aut = new Set(c.map(i => i.autor_id).filter(Boolean)), rec = new Set(c.filter(i => i.retorno).map(i => i.autor_id));
+    return {r, imp, g, conv: imp && g !== null ? 1000 * g / imp : null, vc: med(vis(c)), vp: med(vis(p)),
+            conversa: mc.length ? mc.filter(i => (i.respostas || 0) > 0).length / mc.length : null, nconv: mc.length,
+            ent: (mc.length + c.filter(i => i.enterrado).length) ? c.filter(i => i.enterrado).length / (mc.length + c.filter(i => i.enterrado).length) : null,
+            rec: aut.size ? rec.size / aut.size : null, naut: aut.size, n: todos.length};
+  }).filter(x => x.n);
+  const tr = '<span class="text-secondary">–</span>', f1 = v => v === null || v === undefined ? tr : (Math.round(v * 10) / 10).toLocaleString("pt-BR");
+  const fp = v => v === null || v === undefined ? tr : Math.round(100 * v) + "%";
+  document.getElementById("t-engaj").innerHTML = linhas.map(x => `<tr><td class="text-nowrap">${ponto(x.r)}${nome(x.r)}</td>
+    <td class="text-end">${x.imp ? num(x.imp) : tr}</td><td class="text-end">${f1(x.conv)}</td><td class="text-end">${f1(x.vc)}</td>
+    <td class="text-end">${f1(x.vp)}</td><td class="text-end">${fp(x.conversa)}</td><td class="text-end">${fp(x.ent)}</td>
+    <td class="text-end">${fp(x.rec)}</td></tr>`).join("") || '<tr><td colspan="8" class="vazio">Nada publicado com esses filtros.</td></tr>';
+  // cartões (somando as redes filtradas)
+  const imp = linhas.reduce((a, x) => a + x.imp, 0), gs = linhas.filter(x => x.g !== null && x.imp), g = gs.reduce((a, x) => a + x.g, 0), ig = gs.reduce((a, x) => a + x.imp, 0);
+  set("en-conv", ig ? f1(1000 * g / ig).replace(/<[^>]+>/g, "") : "–"); set("en-conv-sub", ig ? `${g >= 0 ? "+" : ""}${num(g)} seguidores em ${num(ig)} impressões` : "sem impressões medidas");
+  const vc = med(vis(com)), vp = med(vis(posts));
+  set("en-vpa", vp !== null ? num(Math.round(vp)) : vc !== null ? num(Math.round(vc)) : "–");
+  set("en-vpa-sub", `post ${vp !== null ? num(Math.round(vp)) : "–"} · comentário ${vc !== null ? num(Math.round(vc)) : "–"}`);
+  const mc = medidos(com);
+  set("en-conversa", pct(mc.filter(i => (i.respostas || 0) > 0).length, mc.length)); set("en-conversa-sub", `${mc.filter(i => (i.respostas || 0) > 0).length} de ${mc.length} comentários medidos`);
+  const cedo = vis(com.filter(i => i.post_idade_min && i.post_idade_min <= 60)), tarde = vis(com.filter(i => i.post_idade_min && i.post_idade_min > 360));
+  set("en-vel", cedo.length && tarde.length ? (med(cedo) / Math.max(1, med(tarde))).toFixed(1).replace(".", ",") + "×" : "–");
+  set("en-vel-sub", cedo.length || tarde.length ? `1ª hora ${cedo.length ? num(Math.round(med(cedo))) : "–"} · após 6 h ${tarde.length ? num(Math.round(med(tarde))) : "–"} views` : "idade do post gravada a partir de 10/11");
+  const ent = com.filter(i => i.enterrado).length;
+  set("en-ent", pct(ent, ent + mc.length)); set("en-ent-sub", `${ent} de ${ent + mc.length} não achados na medição`);
+  const aut = new Set(com.map(i => i.autor_id).filter(Boolean)), rec = new Set(com.filter(i => i.retorno).map(i => i.autor_id));
+  set("en-rec", pct(rec.size, aut.size)); set("en-rec-sub", `${rec.size} de ${aut.size} autores responderam ou seguiram de volta`);
+  // apoio: aproveitamento da verificação e autoridade fora das redes
+  const ger = base.filter(i => i.tipo === "terceiro" && ["publicado", "reprovado", "erro"].includes(i.status)), rep = ger.filter(i => i.status === "reprovado"), mot = {};
+  rep.forEach(i => mot[i.barrado_por || "outro"] = (mot[i.barrado_por || "outro"] || 0) + 1);
+  const NOMES = {fatos: "fato ou número sem fonte", brier: "Brier (pertinência, segurança, autoridade)", regras: "regras (fórmula, link, tamanho)", revisor: "revisor", travas: "travas de número", outro: "outro"};
+  const gs2 = r => { const l = (serie || []).filter(x => x.rede === r && x.dia >= desde); return l.length >= 2 ? l[l.length - 1].valor - l[0].valor : null; };
+  const ins = gs2("substack"), tab = (serie || []).filter(x => x.rede === "tabnews").slice(-1)[0];
+  document.getElementById("en-apoio").innerHTML = `<div class="mb-2"><b>Aproveitamento da verificação:</b> ${pct(ger.length - rep.length, ger.length)} (${num(rep.length)} barrados de ${num(ger.length)})</div>`
+    + (rep.length ? '<ul class="mb-3">' + Object.entries(mot).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${esc(NOMES[k] || k)}: ${v}</li>`).join("") + "</ul>" : "")
+    + `<div class="mb-1"><b>Newsletter:</b> ${ins === null ? "–" : (ins >= 0 ? "+" : "") + num(ins)} inscritos no período</div>`
+    + `<div><b>TabNews:</b> ${tab ? num(tab.valor) : "–"} tabcoins somados</div>`;
+}
+
 // ---------- saúde: % no ar na janela e ensaio diário ----------
 function saude(sd) {
   const na = sd.no_ar || {}, b = document.getElementById("b-noar");
@@ -915,7 +1003,7 @@ function aplicar() {
   const comparar = F.p < 90;  // 90 dias = tudo o que o painel guarda: não há período anterior
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); seguidores(dados.seguidores || []); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); seguidores(dados.seguidores || []); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
