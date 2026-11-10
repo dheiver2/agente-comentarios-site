@@ -75,6 +75,7 @@
             <ul class="nav nav-pills gap-1" id="paginas" role="tablist" aria-label="Páginas do dashboard">
               <li class="nav-item"><a class="nav-link" href="#" data-pg="geral" role="tab">Visão geral</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="seguidores" role="tab">Seguidores</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="seguindo" role="tab">Seguindo</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="alvos" role="tab">Alvos</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="resultados" role="tab">Resultados</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="itens" role="tab">Itens <span class="badge bg-secondary-lt ms-1" id="pg-itens-n"></span></a></li>
@@ -182,6 +183,38 @@
             </div>
           </div></div>
 
+          <!-- Seguindo: quem o agente seguiu (com critério, sem ciclos de seguir e desseguir) e quem seguiu de volta -->
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Seguidos</div><div class="h1 mb-0" id="sg-total">–</div>
+            <div class="text-secondary small mt-1" id="sg-total-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Hoje × teto</div><div class="h1 mb-0" id="sg-hoje">–</div>
+            <div class="text-secondary small mt-1">1 por rede por hora, na janela</div></div></div></div>
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader" title="Só no X e no Bluesky dá para ver se a pessoa seguiu de volta; conferido 7 dias depois">Seguiram de volta</div>
+            <div class="h1 mb-0" id="sg-volta">–</div><div class="text-secondary small mt-1" id="sg-volta-sub">X e Bluesky, 7 dias depois</div></div></div></div>
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Na fila</div><div class="h1 mb-0" id="sg-fila">–</div>
+            <div class="text-secondary small mt-1">reagiu · círculo · referência · comentado</div></div></div></div>
+          <div class="col-lg-8"><div class="card">
+            <div class="card-header"><h3 class="card-title">Seguindo por rede</h3>
+              <div class="card-actions text-secondary small">TikTok fica de fora: só aceita clique de mouse de verdade</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Seguidos</th><th class="text-end">Hoje / teto</th>
+                <th class="text-end">Já seguia</th><th class="text-end">Falhas</th><th class="text-end">De volta</th><th class="text-end">Desseguidos</th>
+                <th class="text-end" title="seguidores da sua conta desde o 1º dia em que o agente seguiu alguém nessa rede">Seus seguidores desde então</th></tr></thead>
+              <tbody id="t-seguindo"></tbody></table>
+            </div>
+          </div></div>
+          <div class="col-lg-4"><div class="card">
+            <div class="card-header"><h3 class="card-title">Por origem</h3></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Quem</th><th class="text-end">Seguidos</th><th class="text-end">De volta</th></tr></thead>
+              <tbody id="t-seguindo-origem"></tbody></table>
+            </div>
+            <div class="card-body text-secondary small border-top">Deixa de seguir só no X e no Bluesky, depois de 60 dias, quem não seguiu de volta nem reagiu e não é do círculo nem referência: até 3 por rede por semana.</div>
+          </div></div>
+
           <div class="col-lg-5"><div class="card">
             <div class="card-header"><h3 class="card-title">Por hora do dia</h3>
               <div class="card-actions text-secondary small">barras = publicados · linha = engajamento médio</div></div>
@@ -254,6 +287,7 @@
               <li><b>Alvos de qualidade</b>: comentário em post relevante, com tração e de autor com 10 mil+ seguidores (tração é do post, não do comentário).</li>
               <li><b>Conversas</b>: só conta quem respondeu a um comentário nosso; respostas nos seus posts e "Up"/emoji ficam à parte. No Reddit, o voto automático do autor não conta como curtida.</li>
               <li><b>Seguidores</b>: medidos 1× por dia (Reddit = karma, Facebook = amigos).</li>
+              <li><b>Seguindo</b>: o agente segue poucos perfis por dia, escolhidos (quem reagiu, círculo, referências, autor comentado); nunca em ciclos de seguir e desseguir.</li>
               <li><b>Freio</b> e <b>pausada</b> no limite: a rede está em descanso.</li>
             </ul></div>
           </div></div>
@@ -367,9 +401,10 @@ let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", 
 let POR_PAGINA = 10;
 // ---------- páginas (cada uma cabe na tela, sem rolar) ----------
 const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-seguidores"],
+  seguindo: ["sg-total", "sg-hoje", "sg-volta", "sg-fila", "t-seguindo", "t-seguindo-origem"],
   alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
   resultados: ["g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
-const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
+const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
   const linha = document.querySelector(".row-cards");
@@ -611,6 +646,30 @@ function alvos(l) {
     || '<tr><td colspan="3" class="vazio">Ainda lendo os perfis dos autores.</td></tr>';
 }
 
+// ---------- seguindo ----------
+function seguindo(sg, serie) {
+  const set = (id, v) => document.getElementById(id).textContent = v;
+  if (!sg) { set("sg-total", "–"); return; }
+  const pr = (sg.por_rede || []).filter(r => F.redes.has(r.rede)), so = (k, l = pr) => l.reduce((a, r) => a + (r[k] || 0), 0);
+  set("sg-total", num(so("seguidos"))); set("sg-total-sub", `${num(so("ja_seguia"))} já seguidos antes · ${num(so("falhas"))} falhas`);
+  const teto = Object.entries(sg.tetos || {}).filter(([r]) => F.redes.has(r)).reduce((a, [, v]) => a + v, 0);
+  set("sg-hoje", `${num(so("hoje"))} / ${num(teto)}`);
+  const med = so("medivel"), dv = so("de_volta");
+  set("sg-volta", med ? Math.round(100 * dv / med) + "%" : "–"); set("sg-volta-sub", med ? `${dv} de ${med} no X e Bluesky` : "X e Bluesky, 7 dias depois");
+  set("sg-fila", num(sg.fila || 0));
+  const inicioRede = {}; (sg.por_dia || []).forEach(d => { if (!inicioRede[d.rede] || d.dia < inicioRede[d.rede]) inicioRede[d.rede] = d.dia; });
+  const desde = r => { const l = serie.filter(x => x.rede === r && x.dia >= (inicioRede[r] || "9")); if (l.length < 2) return '<span class="text-secondary">aguardando</span>';
+    const d = l[l.length - 1].valor - l[0].valor; return `<span class="${d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary"}">${d > 0 ? "+" : ""}${num(d)}</span>`; };
+  const tr = '<span class="text-secondary">–</span>';
+  document.getElementById("t-seguindo").innerHTML = REDES.map(r => pr.find(x => x.rede === r)).filter(Boolean).map(r => `<tr><td class="text-nowrap">${ponto(r.rede)}${nome(r.rede)}</td>
+    <td class="text-end">${num(r.seguidos || 0)}</td><td class="text-end">${num(r.hoje || 0)} / ${num(r.teto || 0)}</td><td class="text-end">${num(r.ja_seguia || 0)}</td>
+    <td class="text-end">${num(r.falhas || 0)}</td><td class="text-end">${r.medivel ? `${r.de_volta || 0} de ${r.medivel}` : tr}</td>
+    <td class="text-end">${num(r.desseguidos || 0)}</td><td class="text-end">${desde(r.rede)}</td></tr>`).join("")
+    || '<tr><td colspan="8" class="vazio">O agente ainda não seguiu ninguém.</td></tr>';
+  document.getElementById("t-seguindo-origem").innerHTML = (sg.por_origem || []).sort((a, b) => b.seguidos - a.seguidos).map(o => `<tr><td>${esc(o.origem)}</td>
+    <td class="text-end">${num(o.seguidos || 0)}</td><td class="text-end">${o.de_volta ? num(o.de_volta) : tr}</td></tr>`).join("") || '<tr><td colspan="3" class="vazio">–</td></tr>';
+}
+
 // ---------- saúde: % no ar na janela e ensaio diário ----------
 function saude(sd) {
   const na = sd.no_ar || {}, b = document.getElementById("b-noar");
@@ -776,7 +835,7 @@ function aplicar() {
   const comparar = F.p < 90;  // 90 dias = tudo o que o painel guarda: não há período anterior
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); seguidores(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); seguidores(dados.seguidores || []); seguindo(dados.seguindo, dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
