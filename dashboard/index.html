@@ -62,7 +62,7 @@
       <div class="container-xl">
         <div class="row g-2 align-items-center">
           <div class="col">
-            <div class="page-pretitle">Autoridade em IA · 10 redes</div>
+            <div class="page-pretitle">Autoridade em IA · 13 redes</div>
             <h2 class="page-title" id="titulo-pagina">Visão geral</h2>
           </div>
           <div class="col-auto d-flex align-items-center gap-2">
@@ -144,7 +144,7 @@
           <div class="col-6 col-lg"><div class="card"><div class="card-body">
             <div class="subheader">Com resposta</div>
             <div class="d-flex align-items-baseline"><div class="h1 mb-0 me-2" id="k-taxa">–</div><div class="kpi-delta ms-auto" id="d-taxa"></div></div>
-            <div class="text-secondary small mt-1">dos comentários já medidos</div>
+            <div class="text-secondary small mt-1" id="k-taxa-sub">dos comentários já medidos</div>
           </div></div></div>
           <div class="col-6 col-lg"><div class="card"><div class="card-body">
             <div class="subheader">Aprovados no filtro</div>
@@ -206,7 +206,7 @@
 
           <!-- como funciona (explicação da solução) -->
           <div class="col-12"><div class="card" id="s-fluxo">
-            <div class="card-header"><h3 class="card-title">Ágora: presença técnica em IA nas 10 redes, no piloto automático</h3>
+            <div class="card-header"><h3 class="card-title">Ágora: presença técnica em IA nas 13 redes, no piloto automático</h3>
               <div class="card-actions text-secondary small">X · LinkedIn · Instagram · TikTok · YouTube · Facebook · Reddit · GitHub · fórum Hugging Face</div></div>
             <div class="card-body">
               <p class="text-secondary mb-3" style="font-size:.85rem">O objetivo é ser percebido como autoridade em IA pelo conteúdo: comentários técnicos, úteis e verificados,
@@ -224,7 +224,7 @@
           <div class="col-md-6 col-lg-3"><div class="card" id="s-papeis">
             <div class="card-header"><h3 class="card-title">Os papéis (mesma conta)</h3></div>
             <div class="card-body"><ul class="sobre-lista">
-              <li><b>Comentarista</b>: 3 turnos por dia nas 10 redes.</li>
+              <li><b>Comentarista</b>: 3 turnos por dia nas 13 redes.</li>
               <li><b>Radar</b>: chega cedo nos posts que estão subindo.</li>
               <li><b>Conversador</b>: responde quem respondeu (até 2 vezes por fio).</li>
               <li><b>Especialista</b>: perguntas sem resposta no GitHub e no fórum HF.</li>
@@ -251,7 +251,8 @@
               <li><b>Engajamento</b>: curtidas + respostas que os comentários receberam.</li>
               <li><b>Com resposta</b>: % dos comentários medidos que viraram conversa.</li>
               <li><b>Aprovados no filtro</b>: % dos rascunhos que passaram na verificação.</li>
-              <li><b>Alvos de qualidade</b>: comentário em post relevante, visível e de autor com 10 mil+ seguidores.</li>
+              <li><b>Alvos de qualidade</b>: comentário em post relevante, com tração e de autor com 10 mil+ seguidores (tração é do post, não do comentário).</li>
+              <li><b>Conversas</b>: só conta quem respondeu a um comentário nosso; respostas nos seus posts e "Up"/emoji ficam à parte. No Reddit, o voto automático do autor não conta como curtida.</li>
               <li><b>Seguidores</b>: medidos 1× por dia (Reddit = karma, Facebook = amigos).</li>
               <li><b>Freio</b> e <b>pausada</b> no limite: a rede está em descanso.</li>
             </ul></div>
@@ -260,7 +261,7 @@
             <div class="card-header"><h3 class="card-title">Por baixo</h3></div>
             <div class="card-body"><ul class="sobre-lista">
               <li><b>Navegador próprio</b> e invisível: não mexe no seu Chrome nem nas suas janelas.</li>
-              <li><b>Sessões</b>: a extensão entrega só os logins das 10 redes, só neste Mac.</li>
+              <li><b>Sessões</b>: a extensão entrega só os logins das 13 redes, só neste Mac.</li>
               <li><b>Leituras em paralelo</b>; publicações uma por vez.</li>
               <li><b>Modelos de IA</b> próprios: escrita, nota calibrada (Brier) e revisor técnico.</li>
               <li><b>Dashboard</b> com números reais, sem links nem contas na versão pública.</li>
@@ -270,13 +271,13 @@
           <!-- qualidade dos alvos -->
           <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Onde a voz está aparecendo</h3>
-              <div class="card-actions text-secondary small">post relevante: relevância ≥ 70 % no Brier · visível: interações acima do limiar da rede ou post subindo rápido · pessoa relevante: autor com ≥ 10 mil seguidores</div></div>
+              <div class="card-actions text-secondary small">post relevante: relevância ≥ 70 % no Brier · tração: interações acima do limiar da rede ou post subindo rápido · pessoa relevante: autor com ≥ 10 mil seguidores</div></div>
             <div class="card-body"><div class="row g-3" id="a-resumo"></div></div>
           </div></div>
           <div class="col-lg-7"><div class="card">
             <div class="card-header"><h3 class="card-title">Por rede</h3></div>
             <div class="card-table table-responsive">
-              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Coment.</th><th class="text-end" title="post relevante">Relevantes</th><th class="text-end" title="alta visibilidade">Visíveis</th>
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Coment.</th><th class="text-end" title="post relevante">Relevantes</th><th class="text-end" title="post com tração (não mede o comentário)">Com tração</th>
                 <th class="text-end" title="autor com ≥ 10 mil seguidores">Pessoa</th><th class="text-end" title="mediana das interações do post na hora do comentário">Interações</th><th class="text-end" title="mediana dos seguidores do autor do post">Seguidores</th></tr></thead>
               <tbody id="t-alvos"></tbody></table>
             </div>
@@ -311,7 +312,7 @@
                 <select class="form-select form-select-sm w-auto" id="i-extra" aria-label="Resultado dos itens">
                   <option value="">Qualquer resultado</option><option value="engajou">Com curtida ou resposta</option><option value="resposta">Com resposta</option>
                   <option value="sem">Ainda sem medição</option><option value="zero">Medidos sem engajamento</option><option value="nota80">Nota 80 ou mais</option>
-                  <option value="alvo">Alvo de qualidade</option><option value="invisivel">Post pouco visível</option><option value="irrelevante">Post pouco relevante</option>
+                  <option value="alvo">Alvo de qualidade</option><option value="invisivel">Post sem tração</option><option value="irrelevante">Post pouco relevante</option>
                 </select>
                 <input type="search" class="form-control form-control-sm" style="max-width:220px" id="i-busca" placeholder="Buscar nos itens…" aria-label="Buscar nos itens">
                 <a href="#" class="small ms-auto" id="i-limpar">Limpar filtros da tabela</a>
@@ -320,7 +321,7 @@
             <div class="card-table table-responsive">
               <table class="table table-vcenter card-table"><thead><tr>
                 <th class="ord desc" data-ord="quando">Quando</th><th>Rede</th><th>Texto</th><th>Estilo</th>
-                <th title="post relevante · alta visibilidade · pessoa relevante">Alvo</th><th class="ord text-end" data-ord="nota">Nota</th><th class="ord text-end" data-ord="curtidas">Curtidas</th><th class="ord text-end" data-ord="respostas">Respostas</th></tr></thead>
+                <th title="post relevante · post com tração · pessoa relevante">Alvo</th><th class="ord text-end" data-ord="nota">Nota</th><th class="ord text-end" data-ord="curtidas">Curtidas</th><th class="ord text-end" data-ord="respostas">Respostas</th></tr></thead>
               <tbody id="t-itens"></tbody></table>
             </div>
             <div class="card-footer d-flex align-items-center">
@@ -341,11 +342,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
 <script>
-const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface", "substack"];
+const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface", "substack", "threads", "bluesky", "tabnews"];
 const NOMES = {x: "X", linkedin: "LinkedIn", instagram: "Instagram", reddit: "Reddit", youtube: "YouTube",
-  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF", substack: "Substack"};
+  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF", substack: "Substack", threads: "Threads", bluesky: "Bluesky", tabnews: "TabNews"};
 const CORES = {x: "#3b4a63", linkedin: "#0a66c2", instagram: "#d6249f", reddit: "#ff4500", youtube: "#e62117",
-  tiktok: "#00b8b0", facebook: "#1877f2", github: "#6e5494", huggingface: "#f5a623", substack: "#ff6719"};
+  tiktok: "#00b8b0", facebook: "#1877f2", github: "#6e5494", huggingface: "#f5a623", substack: "#ff6719", threads: "#101010", bluesky: "#1185fe", tabnews: "#24292f"};
 const PLURAL = {terceiro: ["comentário", "comentários"], resposta: ["conversa", "conversas"], post: ["post próprio", "posts próprios"], video: ["vídeo", "vídeos"], dm: ["DM", "DMs"]};
 const TIPOS = {terceiro: "Comentário", resposta: "Conversa", post: "Post próprio", video: "Vídeo", dm: "DM"};
 const STATUS = {publicado: ["publicado", "green"], pendente: ["na fila", "blue"], reprovado: ["reprovado", "red"],
@@ -517,8 +518,16 @@ function kpis(l, ant, todos, todosAnt, comparar) {
   const porTipo = Object.entries(pub.reduce((a, i) => (a[i.tipo] = (a[i.tipo] || 0) + 1, a), {})).map(([t, n]) => `${n} ${(PLURAL[t] || [t, t])[n === 1 ? 0 : 1]}`);
   set("k-pub-sub", porTipo.join(" · ") || "nada no período");
   set("k-eng", num(engaj(pub))); delta("d-eng", engaj(pub), c(0, engaj(pubA)));
-  set("k-eng-sub", `${num(soma(pub, "curtidas"))} curtidas · ${num(soma(pub, "respostas"))} respostas · ${medidos(pub).length} medidos`);
+  // cobertura: quantos comentários já foram medidos; sem isso a taxa sai de uma amostra torta (quase só X)
+  const com = pub.filter(i => i.tipo === "terceiro"), mc = medidos(com).length, cob = com.length ? Math.round(100 * mc / com.length) : null;
+  const vis = mediana(com.map(i => i.views)), nVis = com.filter(i => i.views != null).length;
+  set("k-eng-sub", `${num(soma(pub, "curtidas"))} ${soma(pub, "curtidas") === 1 ? "curtida" : "curtidas"} · ${num(soma(pub, "respostas"))} ${soma(pub, "respostas") === 1 ? "resposta" : "respostas"} · medidos ${mc} de ${com.length}` + (cob === null ? "" : ` (${cob}%)`)
+    + (nVis ? ` · ${num(vis)} views por comentário (mediana de ${nVis})` : ""));
   const tx = taxa(pub); set("k-taxa", tx === null ? "–" : tx + "%"); delta("d-taxa", tx, c(0, taxa(pubA)), " p.p.");
+  // conversa de verdade = alguém respondeu a um comentário nosso; respostas nos posts próprios e "Up"/emoji ficam à parte
+  const rec = todos.filter(i => i.tipo === "resposta"), nc = k => rec.filter(i => i.conversa === k).length;
+  set("k-taxa-sub", `dos medidos · ${nc("comentario")} ${nc("comentario") === 1 ? "conversa veio" : "conversas vieram"} dos comentários`
+    + (nc("proprio") ? ` · ${nc("proprio")} nos seus posts` : "") + (nc("rasa") ? ` · ${nc("rasa")} rasas (Up, emoji)` : ""));
   const ap = aprov(todos); set("k-aprov", ap === null ? "–" : ap + "%"); delta("d-aprov", ap, c(0, aprov(todosAnt)), " p.p.");
   const nm = media(todos.filter(i => i.nota !== null && i.status === "publicado").map(i => i.nota));
   set("k-aprov-sub", `nota média ${nm ?? "–"} · ${todos.filter(i => ["reprovado", "ignorado"].includes(i.status)).length} barrados`);
@@ -567,7 +576,7 @@ function pontosAlvo(i) {
   if (i.tipo !== "terceiro") return '<span class="text-secondary">–</span>';
   const p = (v, rot) => `<span class="ponto me-1" style="background:${v === true ? "var(--tblr-green)" : v === false ? "var(--tblr-red)" : "var(--tblr-border-color)"}" title="${rot}: ${v === true ? "sim" : v === false ? "não" : "sem medida"}"></span>`;
   const extra = [i.views != null ? compacto(i.views) + " viram seu comentário" : "", i.post_views ? compacto(i.post_views) + " views" : i.post_interacoes != null ? compacto(i.post_interacoes) + " interações" : "", i.autor_seguidores != null ? compacto(i.autor_seguidores) + " seg." : ""].filter(Boolean).join(" · ");
-  return p(i.alvo_relevante, "Post relevante") + p(i.alvo_visivel, "Alta visibilidade") + p(i.alvo_pessoa, "Pessoa relevante") + (extra ? `<div class="text-secondary small">${extra}</div>` : "");
+  return p(i.alvo_relevante, "Post relevante") + p(i.alvo_visivel, "Post com tração") + p(i.alvo_pessoa, "Pessoa relevante") + (extra ? `<div class="text-secondary small">${extra}</div>` : "");
 }
 function alvos(l) {
   const com = l.filter(i => i.status === "publicado" && i.tipo === "terceiro");
@@ -577,13 +586,13 @@ function alvos(l) {
   k.className = "h1 mb-0 " + (qp === null ? "" : qp >= 50 ? "text-green" : qp >= 25 ? "text-orange" : "text-red");
   const pr = pct(com, "alvo_relevante"), pv = pct(com, "alvo_visivel"), pp = pct(com, "alvo_pessoa");
   const f = v => v === null ? "–" : v + "%";
-  document.getElementById("k-alvo-sub").textContent = `relevante ${f(pr)} · visível ${f(pv)} · pessoa ${f(pp)}`;
+  document.getElementById("k-alvo-sub").textContent = `relevante ${f(pr)} · post com tração ${f(pv)} · pessoa ${f(pp)}`;
   const bloco = (rot, v, n, dica) => `<div class="col-6 col-lg-3"><div class="border rounded p-3 h-100"><div class="subheader">${rot}</div>
     <div class="h1 mb-1">${f(v)}</div><div class="progress progress-sm mb-2"><div class="progress-bar" style="width:${v || 0}%;background:var(--tblr-primary)"></div></div>
     <div class="text-secondary small">${dica} · ${n} medidos</div></div></div>`;
   const med = k => com.filter(i => i[k] !== null && i[k] !== undefined).length;
   document.getElementById("a-resumo").innerHTML = bloco("Alvos de qualidade", qp, q.length, "tudo o que foi medido bate") + bloco("Post relevante", pr, med("alvo_relevante"), "tema de IA, segundo o Brier")
-    + bloco("Alta visibilidade", pv, med("alvo_visivel"), "post com tração na hora") + bloco("Pessoa relevante", pp, med("alvo_pessoa"), "autor com ≥ 10 mil seguidores");
+    + bloco("Post com tração", pv, med("alvo_visivel"), "mede o post, não quem viu o comentário") + bloco("Pessoa relevante", pp, med("alvo_pessoa"), "autor com ≥ 10 mil seguidores");
   const por = {}; com.forEach(i => (por[i.rede] = por[i.rede] || []).push(i));
   document.getElementById("t-alvos").innerHTML = REDES.filter(r => por[r]).map(r => {
     const g = por[r], c = v => v === null ? '<span class="text-secondary">–</span>' : `<span class="${v >= 50 ? "text-green" : v >= 25 ? "text-orange" : "text-red"}">${v}%</span>`;
@@ -615,11 +624,12 @@ function saude(sd) {
   if (e.total) {
     const hist = Object.values(sd.ensaio_hist || {}), verdes = hist.filter(h => h.ok === h.total).length;
     be.classList.remove("d-none");
-    be.className = "badge " + (e.ok === e.total ? "bg-green-lt" : "bg-red-lt");
-    be.textContent = `ensaio ${e.ok}/${e.total}` + (e.dia !== dia(Date.now() / 1000) ? " (ontem)" : "");
+    const fora = REDES.length - e.total;  // ensaio rodou antes de redes novas entrarem: não vale como "todas verdes"
+    be.className = "badge " + (e.ok < e.total ? "bg-red-lt" : fora > 0 ? "bg-orange-lt" : "bg-green-lt");
+    be.textContent = `ensaio ${e.ok}/${e.total}` + (fora > 0 ? ` de ${REDES.length} redes` : "") + (e.dia !== dia(Date.now() / 1000) ? " (ontem)" : "");
     be.title = `Ensaio diário de ${e.dia.split("-").reverse().join("/")}: login + digitar e apagar um comentário com @ em cada rede, sem enviar.\n`
       + Object.entries(e.redes || {}).map(([r, v]) => `${v.ok ? "✓" : "✗"} ${nome(r)}: ${v.detalhe}`).join("\n")
-      + `\nDias com as 10 redes verdes: ${verdes} de ${hist.length} (meta do nível 3: 90 %)`;
+      + (fora > 0 ? `\n${fora} redes ainda fora do ensaio` : "") + `\nDias com todas as redes testadas verdes: ${verdes} de ${hist.length} (meta do nível 3: 90 %)`;
   }
 }
 
