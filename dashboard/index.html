@@ -76,6 +76,7 @@
               <li class="nav-item"><a class="nav-link" href="#" data-pg="geral" role="tab">Visão geral</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="seguidores" role="tab">Seguidores</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="seguindo" role="tab">Seguindo</a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="autoria" role="tab">Autoridade</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="alvos" role="tab">Alvos</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="resultados" role="tab">Resultados</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="itens" role="tab">Itens <span class="badge bg-secondary-lt ms-1" id="pg-itens-n"></span></a></li>
@@ -215,6 +216,35 @@
             <div class="card-body text-secondary small border-top">Deixa de seguir só no X e no Bluesky, depois de 60 dias, quem não seguiu de volta nem reagiu e não é do círculo nem referência: até 3 por rede por semana.</div>
           </div></div>
 
+          <!-- Autoridade: conteúdo próprio a partir de resultados medidos, reação a notícias, newsletter e README -->
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Posts próprios · 30 dias</div><div class="h1 mb-0" id="au-posts">–</div>
+            <div class="text-secondary small mt-1" id="au-posts-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader" title="Resultados com número, tirados dos commits dos repositórios públicos; todo número do post tem de estar aqui">Resultados medidos</div>
+            <div class="h1 mb-0" id="au-achados">–</div><div class="text-secondary small mt-1" id="au-achados-sub">–</div></div></div></div>
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Respostas nos seus posts</div><div class="h1 mb-0" id="au-resp">–</div>
+            <div class="text-secondary small mt-1">conversas que o agente continuou</div></div></div></div>
+          <div class="col-6 col-lg-3"><div class="card"><div class="card-body">
+            <div class="subheader">Newsletter</div><div class="h1 mb-0" id="au-news">–</div>
+            <div class="text-secondary small mt-1 text-truncate" id="au-news-sub">Notas de Bancada · toda sexta</div></div></div></div>
+          <div class="col-lg-7"><div class="card">
+            <div class="card-header"><h3 class="card-title">Conteúdo próprio por rede</h3>
+              <div class="card-actions text-secondary small">resultado medido · notícia em até 2 h</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th class="text-end">Resultado</th><th class="text-end">Notícia</th>
+                <th class="text-end" title="a revisão barrou: número fora do resultado, fato não confirmado, exagero ou texto genérico">Barrados</th>
+                <th class="text-end">Curtidas</th><th class="text-end">Respostas</th><th class="text-end">Views</th></tr></thead>
+              <tbody id="t-autoria"></tbody></table>
+            </div>
+          </div></div>
+          <div class="col-lg-5"><div class="card">
+            <div class="card-header"><h3 class="card-title">Medido em bancada</h3>
+              <div class="card-actions small" id="au-marca"></div></div>
+            <div class="list-group list-group-flush" id="l-achados"></div>
+          </div></div>
+
           <div class="col-lg-5"><div class="card">
             <div class="card-header"><h3 class="card-title">Por hora do dia</h3>
               <div class="card-actions text-secondary small">barras = publicados · linha = engajamento médio</div></div>
@@ -288,6 +318,7 @@
               <li><b>Conversas</b>: só conta quem respondeu a um comentário nosso; respostas nos seus posts e "Up"/emoji ficam à parte. No Reddit, o voto automático do autor não conta como curtida.</li>
               <li><b>Seguidores</b>: medidos 1× por dia (Reddit = karma, Facebook = amigos).</li>
               <li><b>Seguindo</b>: o agente segue poucos perfis por dia, escolhidos (quem reagiu, círculo, referências, autor comentado); nunca em ciclos de seguir e desseguir.</li>
+              <li><b>Autoridade</b>: resultados que você mediu nos repositórios públicos viram post em cada rede (série "Medido em bancada", com a sua marca pessoal); notícia relevante de IA ganha sua leitura em até 2 h; a newsletter "Notas de Bancada" sai toda sexta e o README do GitHub se atualiza sozinho. Todo número tem de estar no resultado medido ou na notícia.</li>
               <li><b>Freio</b> e <b>pausada</b> no limite: a rede está em descanso.</li>
             </ul></div>
           </div></div>
@@ -402,9 +433,10 @@ let POR_PAGINA = 10;
 // ---------- páginas (cada uma cabe na tela, sem rolar) ----------
 const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-seguidores"],
   seguindo: ["sg-total", "sg-hoje", "sg-volta", "sg-fila", "t-seguindo", "t-seguindo-origem"],
+  autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
   alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
   resultados: ["g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
-const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
+const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
   const linha = document.querySelector(".row-cards");
@@ -670,6 +702,31 @@ function seguindo(sg, serie) {
     <td class="text-end">${num(o.seguidos || 0)}</td><td class="text-end">${o.de_volta ? num(o.de_volta) : tr}</td></tr>`).join("") || '<tr><td colspan="3" class="vazio">–</td></tr>';
 }
 
+// ---------- autoridade: conteúdo próprio ----------
+function autoria(au) {
+  const set = (id, v) => document.getElementById(id).textContent = v;
+  if (!au) return;
+  const pr = (au.por_rede || []).filter(r => F.redes.has(r.rede)), so = k => pr.reduce((a, r) => a + (r[k] || 0), 0);
+  set("au-posts", num(so("achado") + so("noticia") + so("pauta")));
+  set("au-posts-sub", `${num(so("achado"))} de resultado · ${num(so("noticia"))} de notícia · ${num(so("reprovados"))} barrados`);
+  const ac = au.achados || {};
+  set("au-achados", num(ac.total || 0)); set("au-achados-sub", `${num(ac.usados || 0)} já viraram post`);
+  set("au-resp", num(au.respostas_nos_posts || 0));
+  const nl = au.newsletter || {};
+  set("au-news", num(nl.edicoes || 0)); set("au-news-sub", nl.ultima ? "última: " + nl.ultima : "Notas de Bancada · toda sexta");
+  const tr = v => v ? num(v) : '<span class="text-secondary">–</span>';
+  document.getElementById("t-autoria").innerHTML = REDES.map(r => pr.find(x => x.rede === r)).filter(Boolean).map(r => `<tr><td class="text-nowrap">${ponto(r.rede)}${nome(r.rede)}</td>
+    <td class="text-end">${tr(r.achado)}</td><td class="text-end">${tr(r.noticia)}</td><td class="text-end">${tr(r.reprovados)}</td>
+    <td class="text-end">${tr(r.curtidas)}</td><td class="text-end">${tr(r.respostas)}</td><td class="text-end">${tr(r.views)}</td></tr>`).join("")
+    || '<tr><td colspan="7" class="vazio">Nenhum post próprio ainda: o primeiro sai na próxima volta da janela.</td></tr>';
+  document.getElementById("l-achados").innerHTML = (ac.ultimos || []).map(a => `<div class="list-group-item py-2">
+    <div class="small">${esc(a.fato)}</div><div class="text-secondary small mt-1">${a.redes.length ? "postado em " + a.redes.map(nome).join(", ") : "ainda não postado"}
+    ${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noopener">commit</a>` : ""}</div></div>`).join("")
+    || '<div class="list-group-item vazio">Sem resultado medido nos últimos 21 dias.</div>';
+  document.getElementById("au-marca").innerHTML = '<a href="https://dheiverphd.com" target="_blank" rel="noopener">Dheiver Santos, PhD</a>'
+    + (au.readme ? ` · <a href="https://github.com/dheiver2" target="_blank" rel="noopener" title="README do GitHub atualizado em ${esc(au.readme)}">GitHub</a>` : "");
+}
+
 // ---------- saúde: % no ar na janela e ensaio diário ----------
 function saude(sd) {
   const na = sd.no_ar || {}, b = document.getElementById("b-noar");
@@ -835,7 +892,7 @@ function aplicar() {
   const comparar = F.p < 90;  // 90 dias = tudo o que o painel guarda: não há período anterior
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); seguidores(dados.seguidores || []); seguindo(dados.seguindo, dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); seguidores(dados.seguidores || []); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
