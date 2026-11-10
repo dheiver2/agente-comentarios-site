@@ -682,10 +682,19 @@ function alvos(l) {
 function seguindo(sg, serie) {
   const set = (id, v) => document.getElementById(id).textContent = v;
   if (!sg) { set("sg-total", "–"); return; }
-  const pr = (sg.por_rede || []).filter(r => F.redes.has(r.rede)), so = (k, l = pr) => l.reduce((a, r) => a + (r[k] || 0), 0);
+  // por período e por rede, a partir dos eventos um a um (o "hoje / teto" continua sendo de hoje)
+  const ini = inicio(0), hoje = Object.fromEntries((sg.por_rede || []).map(r => [r.rede, r.hoje || 0])), por = {}, porOrig = {};
+  (sg.eventos || []).filter(e => F.redes.has(e.rede) && (e.quando || 0) >= ini).forEach(e => {
+    const x = por[e.rede] = por[e.rede] || {rede: e.rede, seguidos: 0, ja_seguia: 0, falhas: 0, desseguidos: 0, de_volta: 0, medivel: 0, hoje: hoje[e.rede] || 0, teto: (sg.tetos || {})[e.rede] || 0};
+    if (e.estado === "seguido") x.seguidos++; else if (e.estado === "ja") x.ja_seguia++; else if (e.estado === "falhou") x.falhas++; else if (e.estado === "desseguido") x.desseguidos++;
+    x.de_volta += e.de_volta === 1 ? 1 : 0; x.medivel += e.medivel ? 1 : 0;
+    const o = porOrig[e.origem] = porOrig[e.origem] || {origem: e.origem, seguidos: 0, de_volta: 0};
+    o.seguidos += e.estado === "seguido" ? 1 : 0; o.de_volta += e.de_volta === 1 ? 1 : 0;
+  });
+  const pr = Object.values(por), so = (k, l = pr) => l.reduce((a, r) => a + (r[k] || 0), 0);
   set("sg-total", num(so("seguidos"))); set("sg-total-sub", `${num(so("ja_seguia"))} já seguidos antes · ${num(so("falhas"))} falhas`);
   const teto = Object.entries(sg.tetos || {}).filter(([r]) => F.redes.has(r)).reduce((a, [, v]) => a + v, 0);
-  set("sg-hoje", `${num(so("hoje"))} / ${num(teto)}`);
+  set("sg-hoje", `${num(Object.entries(hoje).filter(([r]) => F.redes.has(r)).reduce((a, [, v]) => a + v, 0))} / ${num(teto)}`);
   const med = so("medivel"), dv = so("de_volta");
   set("sg-volta", med ? Math.round(100 * dv / med) + "%" : "–"); set("sg-volta-sub", med ? `${dv} de ${med} no X e Bluesky` : "X e Bluesky, 7 dias depois");
   set("sg-fila", num(sg.fila || 0));
@@ -697,8 +706,8 @@ function seguindo(sg, serie) {
     <td class="text-end">${num(r.seguidos || 0)}</td><td class="text-end">${num(r.hoje || 0)} / ${num(r.teto || 0)}</td><td class="text-end">${num(r.ja_seguia || 0)}</td>
     <td class="text-end">${num(r.falhas || 0)}</td><td class="text-end">${r.medivel ? `${r.de_volta || 0} de ${r.medivel}` : tr}</td>
     <td class="text-end">${num(r.desseguidos || 0)}</td><td class="text-end">${desde(r.rede)}</td></tr>`).join("")
-    || '<tr><td colspan="8" class="vazio">O agente ainda não seguiu ninguém.</td></tr>';
-  document.getElementById("t-seguindo-origem").innerHTML = (sg.por_origem || []).sort((a, b) => b.seguidos - a.seguidos).map(o => `<tr><td>${esc(o.origem)}</td>
+    || '<tr><td colspan="8" class="vazio">Ninguém seguido com esses filtros.</td></tr>';
+  document.getElementById("t-seguindo-origem").innerHTML = Object.values(porOrig).filter(o => o.seguidos).sort((a, b) => b.seguidos - a.seguidos).map(o => `<tr><td>${esc(o.origem)}</td>
     <td class="text-end">${num(o.seguidos || 0)}</td><td class="text-end">${o.de_volta ? num(o.de_volta) : tr}</td></tr>`).join("") || '<tr><td colspan="3" class="vazio">–</td></tr>';
 }
 
@@ -706,23 +715,36 @@ function seguindo(sg, serie) {
 function autoria(au) {
   const set = (id, v) => document.getElementById(id).textContent = v;
   if (!au) return;
-  const pr = (au.por_rede || []).filter(r => F.redes.has(r.rede)), so = k => pr.reduce((a, r) => a + (r[k] || 0), 0);
+  // tudo recalculado com os filtros do topo (período, redes, tipo, origem, busca), a partir dos itens um a um
+  const ini = inicio(0), q = F.q.toLowerCase(), base = filtrados(0, false);
+  const posts = base.filter(i => i.tipo === "post" && i.fonte), por = {};
+  posts.forEach(i => {
+    const x = por[i.rede] = por[i.rede] || {rede: i.rede, achado: 0, noticia: 0, pauta: 0, reprovados: 0, curtidas: 0, respostas: 0, views: 0};
+    if (i.status === "publicado") {
+      x[i.fonte === "noticia" ? "noticia" : i.fonte === "achado" || i.fonte === "artigo" ? "achado" : "pauta"]++;
+      x.curtidas += i.curtidas || 0; x.respostas += i.respostas || 0; x.views += i.views || 0;
+    } else if (i.status === "reprovado") x.reprovados++;
+  });
+  const pr = Object.values(por), so = k => pr.reduce((a, r) => a + (r[k] || 0), 0);
   set("au-posts", num(so("achado") + so("noticia") + so("pauta")));
   set("au-posts-sub", `${num(so("achado"))} de resultado · ${num(so("noticia"))} de notícia · ${num(so("reprovados"))} barrados`);
   const ac = au.achados || {};
-  set("au-achados", num(ac.total || 0)); set("au-achados-sub", `${num(ac.usados || 0)} já viraram post`);
-  set("au-resp", num(au.respostas_nos_posts || 0));
-  const nl = au.newsletter || {};
-  set("au-news", num(nl.edicoes || 0)); set("au-news-sub", (nl.inscritos != null ? num(nl.inscritos) + " inscritos · " : "") + (nl.ultima ? "última: " + nl.ultima : "Notas de Bancada · toda sexta"));
+  const proprio = !F.tipo || F.tipo === "post";  // filtro de tipo em comentário ou resposta: conteúdo próprio some
+  const lst = (ac.ultimos || []).filter(a => proprio && (a.criado || 0) >= ini && (!a.redes.length || a.redes.some(r => F.redes.has(r)))
+    && (!q || (a.fato || "").toLowerCase().includes(q)));
+  set("au-achados", num(lst.length)); set("au-achados-sub", `${num(lst.filter(a => a.redes.some(r => F.redes.has(r))).length)} já viraram post nessas redes`);
+  set("au-resp", num(base.filter(i => i.em_post && i.status === "publicado").length));
+  const nl = au.newsletter || {}, eds = (nl.lista || []).filter(e => proprio && e.quando >= ini && (!q || (e.titulo || "").toLowerCase().includes(q)));
+  set("au-news", num(eds.length)); set("au-news-sub", (nl.inscritos != null ? num(nl.inscritos) + " inscritos · " : "") + (eds.length ? "última: " + eds[eds.length - 1].titulo : "Notas de Bancada · toda sexta"));
   const tr = v => v ? num(v) : '<span class="text-secondary">–</span>';
   document.getElementById("t-autoria").innerHTML = REDES.map(r => pr.find(x => x.rede === r)).filter(Boolean).map(r => `<tr><td class="text-nowrap">${ponto(r.rede)}${nome(r.rede)}</td>
     <td class="text-end">${tr(r.achado)}</td><td class="text-end">${tr(r.noticia)}</td><td class="text-end">${tr(r.reprovados)}</td>
     <td class="text-end">${tr(r.curtidas)}</td><td class="text-end">${tr(r.respostas)}</td><td class="text-end">${tr(r.views)}</td></tr>`).join("")
-    || '<tr><td colspan="7" class="vazio">Nenhum post próprio ainda: o primeiro sai na próxima volta da janela.</td></tr>';
-  document.getElementById("l-achados").innerHTML = (ac.ultimos || []).map(a => `<div class="list-group-item py-2">
+    || '<tr><td colspan="7" class="vazio">Nenhum post próprio com esses filtros.</td></tr>';
+  document.getElementById("l-achados").innerHTML = lst.slice(0, 6).map(a => `<div class="list-group-item py-2">
     <div class="small">${esc(a.fato)}</div><div class="text-secondary small mt-1">${a.redes.length ? "postado em " + a.redes.map(nome).join(", ") : "ainda não postado"}
     ${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noopener">commit</a>` : ""}</div></div>`).join("")
-    || '<div class="list-group-item vazio">Sem resultado medido nos últimos 21 dias.</div>';
+    || '<div class="list-group-item vazio">Sem resultado medido com esses filtros.</div>';
   document.getElementById("au-marca").innerHTML = '<a href="https://dheiverphd.com" target="_blank" rel="noopener">Dheiver Santos, PhD</a>'
     + (au.readme ? ` · <a href="https://github.com/dheiver2" target="_blank" rel="noopener" title="README do GitHub atualizado em ${esc(au.readme)}">GitHub</a>` : "");
 }
