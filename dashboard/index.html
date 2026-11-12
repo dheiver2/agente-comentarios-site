@@ -206,6 +206,15 @@
           </div></div>
 
           <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">Em alta hoje em IA</h3>
+              <div class="card-actions text-secondary small" id="tend-meta">–</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Tema</th><th>Força</th><th>Onde</th><th>O que buscar</th><th>Ângulo</th></tr></thead>
+              <tbody id="t-tendencias"></tbody></table>
+            </div>
+          </div></div>
+
+          <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Cada rede na meta dela</h3>
               <div class="card-actions text-secondary small">o que conta em cada rede · no período escolhido · piso: 2 comentários por dia</div></div>
             <div class="card-table table-responsive">
@@ -512,7 +521,7 @@ if (PUBLICO) document.getElementById("link-painel").remove();
 let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", -1], pagina = 0;
 let POR_PAGINA = 10;
 // ---------- páginas (cada uma cabe na tela, sem rolar) ----------
-const PAGINAS = {geral: ["i-rec", "i-conv", "i-inter", "i-leads", "i-seg10", "i-oport", "k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-metas", "t-seguidores"],
+const PAGINAS = {geral: ["i-rec", "i-conv", "i-inter", "i-leads", "i-seg10", "i-oport", "k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites", "t-tendencias"], seguidores: ["t-metas", "t-seguidores"],
   seguindo: ["sg-total", "sg-hoje", "sg-volta", "sg-fila", "t-seguindo", "t-seguindo-origem"],
   autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
   engajamento: ["en-conv", "en-vpa", "en-conversa", "en-vel", "en-ent", "en-rec", "t-engaj", "en-apoio"],
@@ -968,6 +977,17 @@ function indicadores(x) {
   document.getElementById("t-operacao").innerHTML = blocos.map(([t, v, sub]) =>
     `<div class="col-6 col-lg-2"><div class="subheader">${t}</div><div class="h2 mb-0">${v}</div><div class="text-secondary small mt-1">${esc(sub)}</div></div>`).join("");
 }
+function tendencias(t) {
+  const el = document.getElementById("t-tendencias"); if (!el) return;
+  const ts = (t && t.temas) || [];
+  const fontes = Object.entries((t && t.fontes) || {}).filter(([, n]) => n).map(([k, n]) => `${k} ${n}`).join(" · ");
+  document.getElementById("tend-meta").textContent = t && t.quando
+    ? `lido ${new Date(t.quando * 1000).toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"})} · ${fontes} · ${t.em_uso || 0} termos em alta na busca agora`
+    : "ainda não lido hoje";
+  el.innerHTML = ts.map(x => `<tr><td class="fw-bold">${esc(x.tema)}</td><td class="text-nowrap text-warning">${"★".repeat(Math.max(1, Math.min(5, +x.forca || 1)))}</td>
+    <td class="text-secondary small">${esc((x.fontes || []).join(", "))}</td><td class="small">${esc((x.termos || []).slice(0, 3).join(" · "))}<div class="text-secondary">${esc((x.hashtags || []).slice(0, 3).join(" "))}</div></td>
+    <td class="small texto-com">${esc(x.angulo || "")}</td></tr>`).join("") || '<tr><td colspan="5" class="text-secondary">Sem leitura de tendências nas últimas 18 h.</td></tr>';
+}
 function seguidores(s) {
   const desde = dia(inicio(0) + 3600), por = {};
   s.filter(l => F.redes.has(l.rede)).forEach(l => (por[l.rede] = por[l.rede] || []).push(l));
@@ -1094,7 +1114,7 @@ function aplicar() {
   const comparar = F.p < 90 && filtrados(1, false).length > 0;  // sem dado no período anterior a seta só repetiria o total
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); indicadores(dados.indicadores); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); indicadores(dados.indicadores); tendencias(dados.tendencias); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
