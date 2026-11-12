@@ -135,6 +135,33 @@
         </div>
         <div class="row row-deck row-cards">
 
+          <!-- Resultado (7 dias, fixo): relação e negócio, o que a estratégia quer mover -->
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Pessoas comentadas nos últimos 30 dias que responderam, comentaram nos seus posts ou passaram a seguir">Reciprocidade</div>
+            <div class="h1 mb-0" id="i-rec">–</div><div class="text-secondary small mt-1" id="i-rec-sub">–</div>
+          </div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Quem falou com você (resposta a comentário ou comentário no seu post) e recebeu resposta, em 7 dias">Conversas respondidas</div>
+            <div class="h1 mb-0" id="i-conv">–</div><div class="text-secondary small mt-1" id="i-conv-sub">–</div>
+          </div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Pessoas diferentes que reagiram, comentaram, compartilharam ou seguiram (notificações do LinkedIn), 7 dias">Interações nos seus posts</div>
+            <div class="h1 mb-0" id="i-inter">–</div><div class="text-secondary small mt-1" id="i-inter-sub">–</div>
+          </div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Pedidos comerciais detectados nas conversas em 7 dias (orçamento, implementação, palestra)">Leads</div>
+            <div class="h1 mb-0" id="i-leads">–</div><div class="text-secondary small mt-1" id="i-leads-sub">–</div>
+          </div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Saldo de seguidores em 7 dias dividido pelas publicações, vezes 10">Seguidores por 10 publicações</div>
+            <div class="h1 mb-0" id="i-seg10">–</div><div class="text-secondary small mt-1" id="i-seg10-sub">–</div>
+          </div></div></div>
+          <div class="col-6 col-lg-2"><div class="card"><div class="card-body">
+            <div class="subheader" title="Chamadas de palestra, eventos, podcasts e editais achados em 7 dias">Oportunidades</div>
+            <div class="h1 mb-0" id="i-oport">–</div><div class="text-secondary small mt-1" id="i-oport-sub">–</div>
+          </div></div></div>
+          <div class="w-100 m-0 p-0"></div>
+
           <!-- KPIs: seguem os filtros; a seta compara com o período anterior de mesmo tamanho -->
           <div class="col-6 col-lg"><div class="card"><div class="card-body">
             <div class="subheader">Publicados</div>
@@ -292,7 +319,13 @@
             <div class="card-body small" id="en-apoio"></div>
           </div></div>
 
-          <div class="col-lg-4"><div class="card">
+                    <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">Operação e aprendizado</h3>
+              <div class="card-actions text-secondary small">últimos 7 dias</div></div>
+            <div class="card-body"><div class="row g-3" id="t-operacao"></div></div>
+          </div></div>
+
+<div class="col-lg-4"><div class="card">
             <div class="card-header"><h3 class="card-title">Por hora do dia</h3>
               <div class="card-actions text-secondary small">barras: publicados · linha: engajamento</div></div>
             <div class="card-body"><div id="g-hora" style="min-height:240px"></div></div>
@@ -479,12 +512,12 @@ if (PUBLICO) document.getElementById("link-painel").remove();
 let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", -1], pagina = 0;
 let POR_PAGINA = 10;
 // ---------- páginas (cada uma cabe na tela, sem rolar) ----------
-const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-metas", "t-seguidores"],
+const PAGINAS = {geral: ["i-rec", "i-conv", "i-inter", "i-leads", "i-seg10", "i-oport", "k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-metas", "t-seguidores"],
   seguindo: ["sg-total", "sg-hoje", "sg-volta", "sg-fila", "t-seguindo", "t-seguindo-origem"],
   autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
   engajamento: ["en-conv", "en-vpa", "en-conversa", "en-vel", "en-ent", "en-rec", "t-engaj", "en-apoio"],
   alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
-  resultados: ["g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
+  resultados: ["t-operacao", "g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
 const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", engajamento: "Engajamento", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
@@ -910,6 +943,31 @@ function metas(s, l) {
       <td><span class="badge bg-${sit[1]}-lt">${sit[0]}</span></td></tr>`;
   }).join("");
 }
+// ---------- indicadores de resultado e de operação (janela fixa de 7 dias, calculados no agente) ----------
+function indicadores(x) {
+  if (!x) return;
+  const put = (id, v, sub) => { document.getElementById(id).textContent = v; document.getElementById(id + "-sub").textContent = sub; };
+  const r = x.reciprocidade || {}, c = x.conversas || {}, it = x.interacoes || {}, l = x.leads || {}, sg = x.seg_por_10 || {}, op = x.oportunidades || {};
+  put("i-rec", r.pct == null ? "–" : String(r.pct).replace(".", ",") + "%", r.n ? `${r.voltaram} de ${r.n} pessoas comentadas (30 dias)` : "sem dado");
+  put("i-conv", c.recebidas ? `${c.respondidas}/${c.recebidas}` : "–", c.recebidas ? (c.horas_mediana != null ? `resposta em ${String(c.horas_mediana).replace(".", ",")} h (mediana)` : "") + (c.pendentes ? ` · ${c.pendentes} na fila` : "") : "nenhuma conversa");
+  const ac = it.acoes || {}, NOM = {comentou: "comentários", reagiu: "reações", segue: "novos seguidores", compartilhou: "compartilhamentos", mencionou: "menções"};
+  put("i-inter", num(it.pessoas || 0), Object.entries(ac).map(([k, n]) => `${n} ${NOM[k] || k}`).join(" · ") || "pessoas (LinkedIn)");
+  put("i-leads", num(l.n || 0), Object.entries(l.tipos || {}).map(([k, n]) => `${n} ${k}`).join(" · ") || "nenhum pedido comercial");
+  const melhores = Object.entries(sg.por_rede || {}).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${nome(k)} ${String(v).replace(".", ",")}`);
+  put("i-seg10", sg.geral == null ? "–" : String(sg.geral).replace(".", ","), melhores.length ? "melhores: " + melhores.join(" · ") : "sem dado");
+  put("i-oport", num(op.n || 0), (op.lista || []).map(o => o.titulo).slice(0, 2).join(" · ") || "chamadas abertas achadas");
+  const pc = x.proprio_x_comentario || {}, cb = x.cobertura || {}, ab = x.teste_ab || {}, tm = x.tempo_medir || {}, cu = x.curtidas || {}, es = x.espera || {};
+  const vir = v => v == null ? "–" : String(v).replace(".", ",");
+  const blocos = [
+    ["Post próprio × comentário", pc.proprio ? `${vir(pc.proprio.por_item)} × ${vir(pc.comentario.por_item)}` : "–", "reação média por item (curtida + 3× resposta)"],
+    ["Cobertura das redes", cb.total ? `${cb.acima}/${cb.total}` : "–", cb.abaixo && cb.abaixo.length ? "abaixo do piso: " + cb.abaixo.slice(0, 4).map(nome).join(", ") + (cb.abaixo.length > 4 ? "…" : "") : "todas no piso"],
+    ["Teste A/B da vez", ab.ativo ? `${ab.A.engajou}/${ab.A.n} × ${ab.B.engajou}/${ab.B.n}` : (ab.adotados ? `${ab.adotados} adotados` : "–"), ab.ativo ? `${ab.ativo} · decide com ${ab.minimo} medidos por braço` : "sem teste ativo"],
+    ["Tempo até medir", tm.horas_mediana == null ? "–" : vir(tm.horas_mediana) + " h", tm.n ? `mediana de ${tm.n} itens` : "começa a contar hoje"],
+    ["Curtidas dadas hoje", cu.teto ? `${cu.hoje}/${cu.teto}` : "–", "antes de comentar e de responder"],
+    ["Verificação em espera", num(es.n || 0), "itens parados por busca bloqueada ou roteador lento"]];
+  document.getElementById("t-operacao").innerHTML = blocos.map(([t, v, sub]) =>
+    `<div class="col-6 col-lg-2"><div class="subheader">${t}</div><div class="h2 mb-0">${v}</div><div class="text-secondary small mt-1">${esc(sub)}</div></div>`).join("");
+}
 function seguidores(s) {
   const desde = dia(inicio(0) + 3600), por = {};
   s.filter(l => F.redes.has(l.rede)).forEach(l => (por[l.rede] = por[l.rede] || []).push(l));
@@ -1036,7 +1094,7 @@ function aplicar() {
   const comparar = F.p < 90 && filtrados(1, false).length > 0;  // sem dado no período anterior a seta só repetiria o total
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); indicadores(dados.indicadores); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
