@@ -179,6 +179,16 @@
           </div></div>
 
           <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">Cada rede na meta dela</h3>
+              <div class="card-actions text-secondary small">o que conta em cada rede · no período escolhido · piso: 2 comentários por dia</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Rede</th><th>O que conta</th><th class="text-end">Variação</th>
+                <th class="text-end">Publicados</th><th class="text-end" title="comentários por dia">Coment./dia</th><th class="text-end">Interações</th><th>Situação</th></tr></thead>
+              <tbody id="t-metas"></tbody></table>
+            </div>
+          </div></div>
+
+          <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Seguidores no período</h3>
               <div class="card-actions text-secondary small">1× por dia · Reddit = karma · Facebook = amigos</div></div>
             <div class="card-table table-responsive">
@@ -469,7 +479,7 @@ if (PUBLICO) document.getElementById("link-painel").remove();
 let dados = null, gDia = null, gHora = null, campo = "rede", ordem = ["quando", -1], pagina = 0;
 let POR_PAGINA = 10;
 // ---------- páginas (cada uma cabe na tela, sem rolar) ----------
-const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-seguidores"],
+const PAGINAS = {geral: ["k-pub", "k-eng", "k-taxa", "k-aprov", "k-seg", "k-alvo", "g-dia", "limites"], seguidores: ["t-metas", "t-seguidores"],
   seguindo: ["sg-total", "sg-hoje", "sg-volta", "sg-fila", "t-seguindo", "t-seguindo-origem"],
   autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
   engajamento: ["en-conv", "en-vpa", "en-conversa", "en-vel", "en-ent", "en-rec", "t-engaj", "en-apoio"],
@@ -883,6 +893,23 @@ function spark(vals, cor) {
   const pts = vals.map((v, i) => `${(i * w / (vals.length - 1)).toFixed(1)},${(h - 2 - (v - mn) * (h - 4) / sp).toFixed(1)}`).join(" ");
   return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${cor}" stroke-width="1.75" stroke-linejoin="round" points="${pts}"/></svg>`;
 }
+// o que conta em cada rede (a régua de curtida no comentário só serve para LinkedIn, YouTube e X)
+const META = {linkedin: "seguidores e respostas", x: "seguidores", instagram: "seguidores", tiktok: "seguidores", youtube: "inscritos e respostas",
+  facebook: "amigos e reações", reddit: "karma", github: "seguidores", huggingface: "respostas úteis", substack: "inscritos",
+  threads: "seguidores", bluesky: "seguidores", tabnews: "tabcoins"};
+function metas(s, l) {
+  const desde = dia(inicio(0) + 3600), dias = Math.max(1, Math.round((Date.now() / 1000 - inicio(0)) / 86400));
+  const pub = l.filter(i => i.status === "publicado");
+  document.getElementById("t-metas").innerHTML = REDES.filter(r => F.redes.has(r)).map(r => {
+    const serie = s.filter(x => x.rede === r && x.dia >= desde), d = serie.length >= 2 ? serie[serie.length - 1].valor - serie[0].valor : null;
+    const p = pub.filter(i => i.rede === r), n = p.length, inter = engaj(p), pd = p.filter(i => i.tipo === "terceiro").length / dias;
+    const sit = n === 0 ? ["parada", "red"] : pd < 2 ? ["abaixo do piso", "orange"] : (d > 0 || inter > 0) ? ["crescendo", "green"] : ["sem retorno ainda", "secondary"];
+    return `<tr><td class="text-nowrap">${ponto(r)}${nome(r)}</td><td class="text-secondary">${META[r] || "seguidores"}</td>
+      <td class="text-end">${d === null ? '<span class="text-secondary">–</span>' : `<span class="${d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary"}">${d > 0 ? "+" : ""}${num(d)}</span>`}</td>
+      <td class="text-end">${num(n)}</td><td class="text-end">${pd.toFixed(1).replace(".", ",")}</td><td class="text-end">${num(inter)}</td>
+      <td><span class="badge bg-${sit[1]}-lt">${sit[0]}</span></td></tr>`;
+  }).join("");
+}
 function seguidores(s) {
   const desde = dia(inicio(0) + 3600), por = {};
   s.filter(l => F.redes.has(l.rede)).forEach(l => (por[l.rede] = por[l.rede] || []).push(l));
@@ -1009,7 +1036,7 @@ function aplicar() {
   const comparar = F.p < 90 && filtrados(1, false).length > 0;  // sem dado no período anterior a seta só repetiria o total
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); seguidores(dados.seguidores || []); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
