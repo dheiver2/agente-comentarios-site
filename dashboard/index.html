@@ -426,6 +426,7 @@
           <div class="col-md-6 col-lg-3"><div class="card" id="s-protecoes">
             <div class="card-header"><h3 class="card-title">Proteções</h3></div>
             <div class="card-body"><ul class="sobre-lista">
+              <li><b>Cadência por rede</b>: o intervalo entre envios varia como o de uma pessoa, a rede descansa depois de uma sequência e desacelera sozinha a qualquer sinal de penalização (falha ao publicar, perda de seguidores, comentário que some).</li>
               <li><b>Oportunidade, não cota</b>: não há teto por dia. Cada comentário sai quando a oportunidade vale: nota do post, retorno da rede, post novo e relação com o autor. O que segura é o ritmo (intervalo entre envios) e o Guardião. De madrugada só publicam as redes de público internacional.</li>
               <li><b>1 comentário por post</b> e 1 por perfil por dia.</li>
               <li><b>Guarda de seguidores</b>: se uma rede perde seguidores, freia nela por 72 h.</li>
@@ -990,7 +991,7 @@ function limites(l) {
     const login = v.sessao === "fora" ? `<span class="badge bg-danger-lt ms-1">sem login</span>` : "";
     const pausa = v.pausada_ate ? `<span class="badge bg-warning-lt ms-1" title="pausada até ${new Date(v.pausada_ate * 1000).toLocaleString("pt-BR")}">pausada</span>` : "";
     return `<div class="mb-3"><div class="d-flex align-items-center mb-1 small"><div class="d-flex align-items-center">${ponto(r)}${nome(r)}${login}${freio}${pausa}</div>
-      <div class="ms-auto text-secondary">${v.hoje}/${v.dia}</div></div>
+      <div class="ms-auto text-secondary" title="${v.cadencia ? esc(v.cadencia[1]) : ""}">${v.cadencia ? (v.cadencia[0] ? `próximo em ${v.cadencia[0]} min · ` : "livre · ") : ""}${v.hoje}/${v.dia}</div></div>
       <div class="progress barra-limite"><div class="progress-bar" style="width:${pct}%;background:${CORES[r]}"></div></div></div>`;
   }).join("") || '<div class="vazio">Nenhuma rede selecionada.</div>';
 }
