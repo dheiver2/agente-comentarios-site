@@ -400,13 +400,14 @@
           <div class="col-md-6 col-lg-3"><div class="card" id="s-papeis">
             <div class="card-header"><h3 class="card-title">Os papéis (mesma conta)</h3></div>
             <div class="card-body"><ul class="sobre-lista">
-              <li><b>Comentarista</b>: 3 turnos por dia nas 13 redes.</li>
-              <li><b>Radar</b>: chega cedo nos posts que estão subindo.</li>
-              <li><b>Conversador</b>: responde quem respondeu (até 2 vezes por fio).</li>
-              <li><b>Especialista</b>: perguntas sem resposta no GitHub e no fórum HF.</li>
-              <li><b>Relacionamento</b>: DM curta para quem conversou de verdade (máx. 3/dia).</li>
-              <li><b>Autor</b>: posts próprios no LinkedIn, X e Facebook; vídeos no TikTok.</li>
-              <li><b>Analista</b>: métricas, pautas e o autoajuste por rede e estilo.</li>
+              <li><b>Comentarista</b>: 5 turnos por dia nas 13 redes, com piso diário por rede.</li>
+              <li><b>Radar e Tendências</b>: chega cedo nos posts que estão subindo e entra no assunto em alta do dia.</li>
+              <li><b>Conversador</b>: responde quem respondeu e quem comenta nos posts próprios (até 3 vezes por fio); curte antes de responder.</li>
+              <li><b>Relacionamento</b>: mantém o círculo de quem interage e acompanha os próximos posts dessas pessoas.</li>
+              <li><b>Autor</b>: posts próprios de resultados medidos, conversas reaproveitadas no formato de cada rede e carrossel.</li>
+              <li><b>Leads e Oportunidades</b>: pedido comercial e chamada de palestra viram aviso; o agente não fecha negócio.</li>
+              <li><b>Experimentador e Maestro</b>: testam uma alavanca por vez e priorizam cada rede pelo retorno medido.</li>
+              <li>Todos formam o <a href="#" data-ir="enxame">enxame de 100 agentes</a>: 13 redes × 7 funções + 9 coordenadores.</li>
             </ul></div>
           </div></div>
           <div class="col-md-6 col-lg-3"><div class="card" id="s-protecoes">
@@ -564,6 +565,27 @@ function linhasQueCabem() {  // quantos itens cabem na tela até o rodapé da ta
   if (!t.offsetParent) return POR_PAGINA;
   const topo = t.getBoundingClientRect().top + scrollY;
   return Math.max(5, Math.min(25, Math.floor((innerHeight - topo - 75) / 66)));
+}
+// integração entre abas: cada indicador da Visão geral abre a aba onde está o detalhe dele
+const IR = {"i-rec": "engajamento", "i-conv": "itens", "i-inter": "seguidores", "i-leads": "itens", "i-seg10": "seguidores", "i-oport": "resultados", "k-pub": "itens", "k-eng": "engajamento", "k-taxa": "engajamento", "k-aprov": "itens", "k-seg": "seguidores", "k-alvo": "alvos"};
+function ligarAbas() {
+  for (const [id, alvo] of Object.entries(IR)) {
+    const el = document.getElementById(id), card = el && el.closest(".card");
+    if (!card || card.dataset.ir) continue;
+    card.dataset.ir = alvo; card.style.cursor = "pointer"; card.title = "Abrir " + ROTULOS[alvo];
+    card.setAttribute("role", "link"); card.tabIndex = 0;
+  }
+  document.addEventListener("click", e => { const c = e.target.closest("[data-ir]"); if (!c) return; e.preventDefault(); irPara(c.dataset.ir, c.querySelector(".h1[id]") ? c.querySelector(".h1[id]").id : "", c.dataset.rede); });
+  document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset && e.target.dataset.ir) irPara(e.target.dataset.ir, ""); });
+}
+function irPara(alvo, origem, rede) {
+  if (alvo === "itens") {  // leva o recorte certo para a tabela de itens
+    Object.assign(I, PADRAO_I());
+    if (rede) I.rede = rede;
+    if (origem === "i-conv") { I.tipo = "resposta"; I.status = ""; }
+    else if (origem === "k-aprov") I.status = "reprovado";
+  }
+  pg = alvo; gravarHash(); mostrarPagina(); if (alvo === "itens" && dados) { sincronizarControles(); tabela(); }
 }
 function mostrarPagina() {
   if (pg === "pautas" && document.getElementById("pg-pautas-item").classList.contains("d-none")) pg = "geral";
@@ -845,7 +867,7 @@ function autoria(au) {
   });
   const pr = Object.values(por), so = k => pr.reduce((a, r) => a + (r[k] || 0), 0);
   set("au-posts", num(so("achado") + so("noticia") + so("pauta")));
-  set("au-posts-sub", `${num(so("achado"))} de resultado · ${num(so("noticia"))} de notícia · ${num(so("reprovados"))} barrados`);
+  set("au-posts-sub", `${num(so("achado"))} de resultado · ${num(so("noticia"))} de notícia` + (so("pauta") ? ` · ${num(so("pauta"))} de conversa ou pauta` : "") + ` · ${num(so("reprovados"))} barrados`);
   const ac = au.achados || {};
   const proprio = !F.tipo || F.tipo === "post";  // filtro de tipo em comentário ou resposta: conteúdo próprio some
   const lst = (ac.ultimos || []).filter(a => proprio && (a.criado || 0) >= ini && (!a.redes.length || a.redes.some(r => F.redes.has(r)))
@@ -875,7 +897,8 @@ function engajamento(serie) {
   const ini = inicio(0), desde = dia(ini + 3600), base = filtrados(0, false), pub = base.filter(i => i.status === "publicado");
   const com = pub.filter(i => i.tipo === "terceiro"), posts = pub.filter(i => i.tipo === "post");
   const medidos = l => l.filter(i => i.curtidas !== null && i.curtidas !== undefined);
-  const vis = l => l.filter(i => i.views !== null && i.views !== undefined).map(i => i.views);
+  const vis = l => l.filter(i => i.views !== null && i.views !== undefined && !(i.rede === "youtube" && i.tipo === "terceiro")).map(i => i.views);  // no YouTube a view é do vídeo, não do comentário
+  const medn = l => mediana(l);
   const ganho = r => { const l = (serie || []).filter(x => x.rede === r && x.dia >= desde); return l.length >= 2 ? l[l.length - 1].valor - l[0].valor : null; };
   const linhas = REDES.filter(r => F.redes.has(r) && r !== "tabnews").map(r => {
     const c = com.filter(i => i.rede === r), p = posts.filter(i => i.rede === r), todos = pub.filter(i => i.rede === r);
@@ -895,9 +918,9 @@ function engajamento(serie) {
   // cartões (somando as redes filtradas)
   const imp = linhas.reduce((a, x) => a + x.imp, 0), gs = linhas.filter(x => x.g !== null && x.imp), g = gs.reduce((a, x) => a + x.g, 0), ig = gs.reduce((a, x) => a + x.imp, 0);
   set("en-conv", ig ? f1(1000 * g / ig).replace(/<[^>]+>/g, "") : "–"); set("en-conv-sub", ig ? `${g >= 0 ? "+" : ""}${num(g)} seguidores em ${num(ig)} impressões` : "sem impressões medidas");
-  const vc = med(vis(com)), vp = med(vis(posts));
+  const vc = medn(vis(com)), vp = medn(vis(posts));
   set("en-vpa", vp !== null ? num(Math.round(vp)) : vc !== null ? num(Math.round(vc)) : "–");
-  set("en-vpa-sub", `post ${vp !== null ? num(Math.round(vp)) : "–"} · comentário ${vc !== null ? num(Math.round(vc)) : "–"}`);
+  set("en-vpa-sub", `mediana · post ${vp !== null ? num(Math.round(vp)) : "–"} · comentário ${vc !== null ? num(Math.round(vc)) : "–"}`);
   const mc = medidos(com);
   set("en-conversa", pct(mc.filter(i => (i.respostas || 0) > 0).length, mc.length)); set("en-conversa-sub", `${mc.filter(i => (i.respostas || 0) > 0).length} de ${mc.length} comentários medidos`);
   const cedo = vis(com.filter(i => i.post_idade_min && i.post_idade_min <= 60)), tarde = vis(com.filter(i => i.post_idade_min && i.post_idade_min > 360));
@@ -906,14 +929,16 @@ function engajamento(serie) {
   const ent = com.filter(i => i.enterrado).length;
   set("en-ent", pct(ent, ent + mc.length)); set("en-ent-sub", `${ent} de ${ent + mc.length} não achados na medição`);
   const aut = new Set(com.map(i => i.autor_id).filter(Boolean)), rec = new Set(com.filter(i => i.retorno).map(i => i.autor_id));
-  set("en-rec", pct(rec.size, aut.size)); set("en-rec-sub", `${rec.size} de ${aut.size} autores responderam ou seguiram de volta`);
+  const ri = (dados.indicadores || {}).reciprocidade;  // mesmo cálculo da Visão geral (30 dias, com quem interagiu nos seus posts)
+  if (ri && ri.pct != null) { set("en-rec", String(ri.pct).replace(".", ",") + "%"); set("en-rec-sub", `${ri.voltaram} de ${ri.n} pessoas comentadas (30 dias)`); }
+  else { set("en-rec", pct(rec.size, aut.size)); set("en-rec-sub", `${rec.size} de ${aut.size} autores responderam ou seguiram de volta`); }
   // apoio: aproveitamento da verificação e autoridade fora das redes
   const ger = base.filter(i => i.tipo === "terceiro" && ["publicado", "reprovado", "erro"].includes(i.status)), rep = ger.filter(i => i.status === "reprovado"), mot = {};
   rep.forEach(i => mot[i.barrado_por || "outro"] = (mot[i.barrado_por || "outro"] || 0) + 1);
   const NOMES = {fatos: "fato ou número sem fonte", brier: "modelo calibrado (pertinência, segurança, autoridade)", regras: "regras (fórmula, link, tamanho)", revisor: "revisor", travas: "travas de número", outro: "outro"};
   const gs2 = r => { const l = (serie || []).filter(x => x.rede === r && x.dia >= desde); return l.length >= 2 ? l[l.length - 1].valor - l[0].valor : null; };
   const ins = gs2("substack"), tab = (serie || []).filter(x => x.rede === "tabnews").slice(-1)[0];
-  document.getElementById("en-apoio").innerHTML = `<div class="mb-2"><b>Aproveitamento da verificação:</b> ${pct(ger.length - rep.length, ger.length)} (${num(rep.length)} barrados de ${num(ger.length)})</div>`
+  document.getElementById("en-apoio").innerHTML = `<div class="mb-2"><b>Aprovados no filtro:</b> ${aprov(base) === null ? "–" : aprov(base) + "%"} (o mesmo da Visão geral) · ${num(rep.length)} reprovados na verificação</div>`
     + (rep.length ? '<ul class="mb-3">' + Object.entries(mot).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${esc(NOMES[k] || k)}: ${v}</li>`).join("") + "</ul>" : "")
     + `<div class="mb-1"><b>Newsletter:</b> ${ins === null ? "–" : (ins >= 0 ? "+" : "") + num(ins)} inscritos no período</div>`
     + `<div><b>TabNews:</b> ${tab ? num(tab.valor) : "–"} tabcoins somados</div>`;
@@ -970,7 +995,7 @@ function metas(s, l) {
     const serie = s.filter(x => x.rede === r && x.dia >= desde), d = serie.length >= 2 ? serie[serie.length - 1].valor - serie[0].valor : null;
     const p = pub.filter(i => i.rede === r), n = p.length, inter = engaj(p), pd = p.filter(i => i.tipo === "terceiro").length / dias;
     const sit = n === 0 ? ["parada", "red"] : pd < 2 ? ["abaixo do piso", "orange"] : (d > 0 || inter > 0) ? ["crescendo", "green"] : ["sem retorno ainda", "secondary"];
-    return `<tr><td class="text-nowrap">${ponto(r)}${nome(r)}</td><td class="text-secondary">${META[r] || "seguidores"}</td>
+    return `<tr><td class="text-nowrap" data-ir="itens" data-rede="${r}" style="cursor:pointer" title="Ver os itens desta rede">${ponto(r)}${nome(r)}</td><td class="text-secondary">${META[r] || "seguidores"}</td>
       <td class="text-end">${d === null ? '<span class="text-secondary">–</span>' : `<span class="${d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary"}">${d > 0 ? "+" : ""}${num(d)}</span>`}</td>
       <td class="text-end">${num(n)}</td><td class="text-end">${pd.toFixed(1).replace(".", ",")}</td><td class="text-end">${num(inter)}</td>
       <td><span class="badge bg-${sit[1]}-lt">${sit[0]}</span></td></tr>`;
@@ -1018,7 +1043,7 @@ function enxame(x) {
   document.getElementById("t-enxame-cab").innerHTML = '<th class="text-start">Rede</th>' + x.funcoes.map(f => `<th title="${esc(f.faz)}">${f.nome}</th>`).join("") + '<th title="bônus de prioridade na fila">Maestro</th>';
   document.getElementById("t-enxame").innerHTML = REDES.map(r => {
     const b = (x.maestro.bonus || {})[r];
-    return `<tr><td class="text-start text-nowrap">${ponto(r)}${nome(r)}</td>` + x.funcoes.map(f => { const a = por[r + "." + f.id] || {};
+    return `<tr><td class="text-start text-nowrap" data-ir="itens" data-rede="${r}" style="cursor:pointer" title="Ver os itens desta rede">${ponto(r)}${nome(r)}</td>` + x.funcoes.map(f => { const a = por[r + "." + f.id] || {};
       return `<td title="${a.evento ? esc((EVENTO[a.evento] || a.evento) + " às " + hora(a.ultimo)) : "ainda não agiu hoje"}">${a.vezes ? `<span class="badge bg-green-lt">${num(a.total || a.vezes)}</span>` : '<span class="text-secondary">·</span>'}</td>`; }).join("")
       + `<td>${b === undefined ? '<span class="text-secondary" title="sem amostra: vale o piso diário">–</span>' : `<span class="${b > 0 ? "text-green" : b < 0 ? "text-red" : "text-secondary"}">${b > 0 ? "+" : ""}${b}</span>`}</td></tr>`; }).join("");
   document.getElementById("t-coord").innerHTML = x.coordenadores.map(c => { const a = por[c.id] || {};
@@ -1188,7 +1213,7 @@ async function carregar() {
   document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
 }
 
-lerHash(); marcarPaginas(); montarControles(); sincronizarControles(); mostrarPagina();
+lerHash(); marcarPaginas(); ligarAbas(); montarControles(); sincronizarControles(); mostrarPagina();
 addEventListener("hashchange", () => { lerHash(); aplicar(); mostrarPagina(); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
   document.documentElement.setAttribute("data-bs-theme", e.matches ? "dark" : "light");
