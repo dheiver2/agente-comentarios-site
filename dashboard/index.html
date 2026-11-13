@@ -9,6 +9,7 @@
   document.documentElement.setAttribute("data-bs-theme", matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/css/tabler.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css">
 <style>
   :root { --tblr-primary: #E94A12; --tblr-primary-rgb: 233, 74, 18; --tblr-font-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; }
   body { font-feature-settings: "tnum"; }
@@ -202,7 +203,7 @@
           </div></div>
 
           <div class="col-lg-4"><div class="card">
-            <div class="card-header"><h3 class="card-title">Últimas 24 h × limite</h3></div>
+            <div class="card-header"><h3 class="card-title" title="A referência não é teto: passar dela exige rede saudável, com retorno, e comentário de nota maior">Últimas 24 h × referência</h3></div>
             <div class="card-body" id="limites"></div>
           </div></div>
 
@@ -360,6 +361,18 @@
           <!-- como funciona (explicação da solução) -->
           <!-- Enxame: 100 microagentes (13 redes × 7 funções + 9 coordenadores) e o quadro de eventos por onde conversam -->
           <div class="col-12"><div class="card"><div class="card-body"><div class="row g-3" id="x-resumo"></div></div></div></div>
+          <div class="col-lg-8"><div class="card">
+            <div class="card-header"><h3 class="card-title">Onde os agentes atuaram</h3>
+              <div class="card-actions text-secondary small">país do autor do post comentado · 30 dias · <span style="color:#c2410c">■</span> 20 ou mais <span style="color:#f97316">■</span> 3 a 19 <span style="color:#fdba74">■</span> 1 ou 2</div></div>
+            <div class="card-body"><div id="x-mapa" style="height:380px"></div></div>
+          </div></div>
+          <div class="col-lg-4"><div class="card">
+            <div class="card-header"><h3 class="card-title">Por país</h3></div>
+            <div class="card-table table-responsive" style="max-height:380px;overflow-y:auto">
+              <table class="table table-sm table-vcenter"><thead><tr><th>País</th><th class="text-end">Comentários</th><th>Redes</th></tr></thead><tbody id="t-paises"></tbody></table>
+            </div>
+            <div class="card-footer text-secondary small" id="x-mapa-nota"></div>
+          </div></div>
           <div class="col-12"><div class="card">
             <div class="card-header"><h3 class="card-title">Agentes por rede</h3>
               <div class="card-actions text-secondary small">número = ações hoje · cinza = ainda não agiu hoje · coluna Maestro = prioridade da rede pelo retorno medido</div></div>
@@ -413,7 +426,7 @@
           <div class="col-md-6 col-lg-3"><div class="card" id="s-protecoes">
             <div class="card-header"><h3 class="card-title">Proteções</h3></div>
             <div class="card-body"><ul class="sobre-lista">
-              <li><b>Ritmo humano</b>: limite por hora e por dia em cada rede, intervalo entre envios, janela das 07h às 21h.</li>
+              <li><b>Ritmo humano</b>: limite por hora e intervalo entre envios em cada rede. O volume por dia é uma referência: passar dela exige rede saudável, com retorno medido, e comentário de nota maior. De madrugada só publicam as redes de público internacional.</li>
               <li><b>1 comentário por post</b> e 1 por perfil por dia.</li>
               <li><b>Guarda de seguidores</b>: se uma rede perde seguidores, freia nela por 72 h.</li>
               <li><b>Aviso da rede</b> (limite, bloqueio, captcha): pausa a rede, não insiste.</li>
@@ -520,6 +533,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0/dist/js/tabler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/js/jsvectormap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/maps/world.js"></script>
 <script>
 const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface", "substack", "threads", "bluesky", "tabnews"];
 const NOMES = {x: "X", linkedin: "LinkedIn", instagram: "Instagram", reddit: "Reddit", youtube: "YouTube",
@@ -551,7 +566,7 @@ const PAGINAS = {geral: ["i-rec", "i-conv", "i-inter", "i-leads", "i-seg10", "i-
   autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
   engajamento: ["en-conv", "en-vpa", "en-conversa", "en-vel", "en-ent", "en-rec", "t-engaj", "en-apoio"],
   alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
-  resultados: ["t-operacao", "g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"], enxame: ["x-resumo", "t-enxame", "t-coord", "t-eventos"]};
+  resultados: ["t-operacao", "g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"], enxame: ["x-resumo", "x-mapa", "t-paises", "t-enxame", "t-coord", "t-eventos"]};
 const ROTULOS = {enxame: "Enxame de agentes", sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", engajamento: "Engajamento", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
@@ -599,6 +614,7 @@ function mostrarPagina() {
     if (pg === "resultados") { if (gHora) gHora.destroy(); gHora = null; graficoHora(filtrados(0)); }
     if (pg === "geral") { if (gDia) gDia.destroy(); gDia = null; graficoDia(filtrados(0)); } });
   if (pg === "itens" && dados) encaixar();
+  if (pg === "enxame" && dados) requestAnimationFrame(mapaMundi);
 }
 function encaixar() {  // começa no que a conta estima e tira linhas até a página caber na tela
   POR_PAGINA = linhasQueCabem() + 3; tabela();
@@ -1031,8 +1047,29 @@ const EVENTO = {posts_achados: "achou posts", posts_aprovados: "aprovou posts", 
   respondido: "respondeu", medido: "mediu", prioridades: "definiu prioridades", temas_do_dia: "leu os temas do dia", circulo_refeito: "refez o círculo",
   interacoes_lidas: "leu interações", post_escrito: "escreveu post próprio", post_publicado: "publicou post próprio", teste_decidido: "fechou um teste",
   lead: "achou um lead", achadas: "achou oportunidades", rede_pausada: "pausou a rede", painel_publicado: "publicou o painel", relatorio_semanal: "enviou o relatório"};
+let gMapa = null;
+function mapaMundi() {  // desenha só com a aba visível (escondido, o mapa fica sem tamanho)
+  const m = dados && dados.mapa, el = document.getElementById("x-mapa");
+  if (!m || !el || pg !== "enxame" || typeof jsVectorMap === "undefined") return;
+  const vals = {}; Object.entries(m.paises).forEach(([k, v]) => vals[k] = v.n);
+  const nomeP = c => { try { return new Intl.DisplayNames(["pt-BR"], {type: "region"}).of(c); } catch (e) { return c; } };
+  document.getElementById("t-paises").innerHTML = Object.entries(m.paises).sort((a, b) => b[1].n - a[1].n).map(([c, v]) =>
+    `<tr><td>${esc(nomeP(c))}</td><td class="text-end">${num(v.n)}</td><td class="small text-secondary">${Object.entries(v.redes).sort((a, b) => b[1] - a[1]).map(([r, n]) => `${nome(r)} ${n}`).join(" · ")}</td></tr>`).join("")
+    || '<tr><td colspan="3" class="text-secondary">Sem dado ainda.</td></tr>';
+  document.getElementById("x-mapa-nota").textContent = `${num(m.total - m.sem_pais)} de ${num(m.total)} comentários com país. YouTube: país declarado pelo canal. Outras redes: post em português conta como Brasil; ${num(m.sem_pais)} em inglês ou sem país declarado ficam fora do mapa.`;
+  if (gMapa) { try { gMapa.destroy(); } catch (e) {} gMapa = null; }
+  el.innerHTML = "";
+  gMapa = new jsVectorMap({selector: "#x-mapa", map: "world", zoomButtons: true, zoomOnScroll: false, backgroundColor: "transparent",
+    regionStyle: {initial: {fill: escuro() ? "#2c3344" : "#e6e7e9", stroke: escuro() ? "#1a2234" : "#ffffff", strokeWidth: 0.4}, hover: {fillOpacity: 0.8}},
+    series: {regions: [{attribute: "fill", scale: {muito: "#c2410c", medio: "#f97316", pouco: "#fdba74"},
+      values: Object.fromEntries(Object.entries(vals).map(([k, n]) => [k, n >= 20 ? "muito" : n >= 3 ? "medio" : "pouco"]))}]},
+    onRegionTooltipShow(ev, tip, code) { tip.text(`${nomeP(code)}: ${vals[code] ? num(vals[code]) + " comentários" : "sem atuação"}`); }});
+  setTimeout(() => { try { gMapa.updateSize(); } catch (e) {} }, 150);  // ajusta ao tamanho do cartão depois de aparecer
+}
+addEventListener("resize", () => { if (gMapa && pg === "enxame") try { gMapa.updateSize(); } catch (e) {} });
 function enxame(x) {
   if (!x) return;
+  mapaMundi();
   document.getElementById("pg-enxame-n").textContent = x.total;
   const hora = t => t ? new Date(t * 1000).toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"}) : "–";
   const pausadas = Object.values((dados.limites) || {}).filter(v => v.pausada_ate).length;
@@ -1207,7 +1244,8 @@ async function carregar() {
   if (dados.llm && !dados.llm.ok) { al.classList.remove("d-none"); al.querySelector("span").textContent = dados.llm.detalhe.slice(0, 60); }
   else al.classList.add("d-none");
   j.className = "badge " + (PUBLICO ? "bg-secondary-lt" : dados.na_janela ? "bg-green-lt" : "bg-secondary-lt");
-  j.textContent = PUBLICO ? `Publica das ${dados.janela[0].slice(0, 2)}h às ${dados.janela[1].slice(0, 2)}h` : (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
+  j.title = dados.modo24 ? "De madrugada só publicam as redes de público internacional: " + (dados.redes_noite || []).map(nome).join(", ") : "";
+  j.textContent = PUBLICO ? (dados.modo24 ? `24 h · redes do Brasil das ${dados.janela[0].slice(0, 2)}h às ${dados.janela[1].slice(0, 2)}h` : `Publica das ${dados.janela[0].slice(0, 2)}h às ${dados.janela[1].slice(0, 2)}h`) : (dados.na_janela ? "publicando" : "fora da janela") + ` · ${dados.janela[0]}–${dados.janela[1]}`;
   if (!PUBLICO && dados.llm && !dados.llm.ok) { j.className = "badge bg-red-lt"; j.textContent = "parado · LLM fora do ar"; }
   const t = new Date(PUBLICO ? dados.agora * 1000 : Date.now());
   document.getElementById("atualizado").textContent = "atualizado " + t.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + " às " + t.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
