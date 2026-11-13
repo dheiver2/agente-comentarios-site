@@ -83,6 +83,7 @@
               <li class="nav-item"><a class="nav-link" href="#" data-pg="alvos" role="tab">Alvos</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="resultados" role="tab">Resultados</a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="itens" role="tab">Itens <span class="badge bg-secondary-lt ms-1" id="pg-itens-n"></span></a></li>
+              <li class="nav-item"><a class="nav-link" href="#" data-pg="enxame" role="tab">Enxame <span class="badge bg-secondary-lt ms-1" id="pg-enxame-n"></span></a></li>
               <li class="nav-item"><a class="nav-link" href="#" data-pg="sobre" role="tab">Como funciona</a></li>
               <li class="nav-item d-none" id="pg-pautas-item"><a class="nav-link" href="#" data-pg="pautas" role="tab">Pautas</a></li>
             </ul>
@@ -357,6 +358,29 @@
           </div></div>
 
           <!-- como funciona (explicação da solução) -->
+          <!-- Enxame: 100 microagentes (13 redes × 7 funções + 9 coordenadores) e o quadro de eventos por onde conversam -->
+          <div class="col-12"><div class="card"><div class="card-body"><div class="row g-3" id="x-resumo"></div></div></div></div>
+          <div class="col-12"><div class="card">
+            <div class="card-header"><h3 class="card-title">Agentes por rede</h3>
+              <div class="card-actions text-secondary small">número = ações hoje · cinza = ainda não agiu hoje · coluna Maestro = prioridade da rede pelo retorno medido</div></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter text-center"><thead><tr id="t-enxame-cab"></tr></thead><tbody id="t-enxame"></tbody></table>
+            </div>
+          </div></div>
+          <div class="col-lg-5"><div class="card">
+            <div class="card-header"><h3 class="card-title">Coordenadores</h3></div>
+            <div class="card-table table-responsive">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Agente</th><th>Papel</th><th class="text-end">Hoje</th><th>Última ação</th></tr></thead><tbody id="t-coord"></tbody></table>
+            </div>
+          </div></div>
+          <div class="col-lg-7"><div class="card">
+            <div class="card-header"><h3 class="card-title">Quadro de eventos</h3>
+              <div class="card-actions text-secondary small">o que cada agente registrou, do mais recente</div></div>
+            <div class="card-table table-responsive" style="max-height:520px;overflow-y:auto">
+              <table class="table table-sm table-vcenter"><thead><tr><th>Hora</th><th>Agente</th><th>Evento</th><th>Detalhe</th></tr></thead><tbody id="t-eventos"></tbody></table>
+            </div>
+          </div></div>
+
           <div class="col-12"><div class="card" id="s-fluxo">
             <div class="card-header"><h3 class="card-title">Ágora: presença técnica em IA nas 13 redes, no piloto automático</h3>
               <div class="card-actions text-secondary small">X · LinkedIn · Instagram · TikTok · YouTube · Facebook · Reddit · GitHub · fórum Hugging Face</div></div>
@@ -526,8 +550,8 @@ const PAGINAS = {geral: ["i-rec", "i-conv", "i-inter", "i-leads", "i-seg10", "i-
   autoria: ["au-posts", "au-achados", "au-resp", "au-news", "t-autoria", "l-achados"],
   engajamento: ["en-conv", "en-vpa", "en-conversa", "en-vel", "en-ent", "en-rec", "t-engaj", "en-apoio"],
   alvos: ["a-resumo", "t-alvos", "t-maiores"], sobre: ["s-fluxo", "s-papeis", "s-protecoes", "s-numeros", "s-tecnica"],
-  resultados: ["t-operacao", "g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"]};
-const ROTULOS = {sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", engajamento: "Engajamento", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
+  resultados: ["t-operacao", "g-hora", "t-grupo"], itens: ["t-itens"], pautas: ["ideias"], enxame: ["x-resumo", "t-enxame", "t-coord", "t-eventos"]};
+const ROTULOS = {enxame: "Enxame de agentes", sobre: "Como funciona", geral: "Visão geral", alvos: "Qualidade dos alvos", seguidores: "Seguidores", seguindo: "Seguindo", autoria: "Autoridade", engajamento: "Engajamento", resultados: "Resultados", itens: "Itens", pautas: "Pautas"};
 let pg = "geral";
 function marcarPaginas() {
   const linha = document.querySelector(".row-cards");
@@ -546,7 +570,7 @@ function mostrarPagina() {
   document.querySelectorAll(".row-cards > [data-pg]").forEach(c => c.classList.toggle("d-none", c.dataset.pg !== pg));
   document.querySelectorAll("#paginas [data-pg]").forEach(a => { const on = a.dataset.pg === pg; a.classList.toggle("active", on); a.setAttribute("aria-selected", on); });
   document.getElementById("titulo-pagina").textContent = ROTULOS[pg];
-  document.querySelector(".filtros").classList.toggle("d-none", pg === "sobre");  // a explicação não depende de filtro
+  document.querySelector(".filtros").classList.toggle("d-none", pg === "sobre" || pg === "enxame");  // a explicação não depende de filtro
   scrollTo(0, 0);
   dispatchEvent(new Event("resize"));  // gráficos que estavam escondidos se redesenham com a largura certa
   if (dados) requestAnimationFrame(() => {  // ApexCharts desenhado com a aba escondida fica em branco: refaz ao mostrar
@@ -977,6 +1001,35 @@ function indicadores(x) {
   document.getElementById("t-operacao").innerHTML = blocos.map(([t, v, sub]) =>
     `<div class="col-6 col-lg-2"><div class="subheader">${t}</div><div class="h2 mb-0">${v}</div><div class="text-secondary small mt-1">${esc(sub)}</div></div>`).join("");
 }
+const EVENTO = {posts_achados: "achou posts", posts_aprovados: "aprovou posts", rascunho: "escreveu rascunho", aprovado: "aprovou o texto",
+  reprovado: "reprovou o texto", publicado: "publicou", curtida: "curtiu", falha_publicar: "falhou ao publicar", resposta_recebida: "recebeu resposta",
+  respondido: "respondeu", medido: "mediu", prioridades: "definiu prioridades", temas_do_dia: "leu os temas do dia", circulo_refeito: "refez o círculo",
+  interacoes_lidas: "leu interações", post_escrito: "escreveu post próprio", post_publicado: "publicou post próprio", teste_decidido: "fechou um teste",
+  lead: "achou um lead", achadas: "achou oportunidades", rede_pausada: "pausou a rede", painel_publicado: "publicou o painel", relatorio_semanal: "enviou o relatório"};
+function enxame(x) {
+  if (!x) return;
+  document.getElementById("pg-enxame-n").textContent = x.total;
+  const hora = t => t ? new Date(t * 1000).toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"}) : "–";
+  const pausadas = Object.values((dados.limites) || {}).filter(v => v.pausada_ate).length;
+  document.getElementById("x-resumo").innerHTML = [["Agentes", x.total, "13 redes × 7 funções + 9 coordenadores"], ["Ativos hoje", x.ativos_hoje, "registraram ao menos uma ação"],
+    ["Ações hoje", num(x.eventos_hoje), "eventos no quadro"], ["Redes pausadas", pausadas, "pelo Guardião ou por alerta da rede"]]
+    .map(([t, v, sub]) => `<div class="col-6 col-lg-3"><div class="subheader">${t}</div><div class="h1 mb-0">${v}</div><div class="text-secondary small mt-1">${sub}</div></div>`).join("");
+  const por = {}; x.agentes.forEach(a => por[a.id] = a);
+  document.getElementById("t-enxame-cab").innerHTML = '<th class="text-start">Rede</th>' + x.funcoes.map(f => `<th title="${esc(f.faz)}">${f.nome}</th>`).join("") + '<th title="bônus de prioridade na fila">Maestro</th>';
+  document.getElementById("t-enxame").innerHTML = REDES.map(r => {
+    const b = (x.maestro.bonus || {})[r];
+    return `<tr><td class="text-start text-nowrap">${ponto(r)}${nome(r)}</td>` + x.funcoes.map(f => { const a = por[r + "." + f.id] || {};
+      return `<td title="${a.evento ? esc((EVENTO[a.evento] || a.evento) + " às " + hora(a.ultimo)) : "ainda não agiu hoje"}">${a.vezes ? `<span class="badge bg-green-lt">${num(a.total || a.vezes)}</span>` : '<span class="text-secondary">·</span>'}</td>`; }).join("")
+      + `<td>${b === undefined ? '<span class="text-secondary" title="sem amostra: vale o piso diário">–</span>' : `<span class="${b > 0 ? "text-green" : b < 0 ? "text-red" : "text-secondary"}">${b > 0 ? "+" : ""}${b}</span>`}</td></tr>`; }).join("");
+  document.getElementById("t-coord").innerHTML = x.coordenadores.map(c => { const a = por[c.id] || {};
+    return `<tr><td class="fw-bold">${c.nome}</td><td class="text-secondary small">${esc(c.faz)}</td><td class="text-end">${a.vezes || '<span class="text-secondary">·</span>'}</td>
+      <td class="small">${a.evento ? esc(EVENTO[a.evento] || a.evento) + ` <span class="text-secondary">${hora(a.ultimo)}</span>` : '<span class="text-secondary">–</span>'}</td></tr>`; }).join("");
+  const rot = id => { const [r, f] = id.split("."); if (!f) return (x.coordenadores.find(c => c.id === id) || {}).nome || id;
+    return `${(x.funcoes.find(k => k.id === f) || {}).nome || f} · ${nome(r)}`; };
+  document.getElementById("t-eventos").innerHTML = x.eventos.map(e => `<tr><td class="text-secondary text-nowrap">${hora(e.quando)}</td><td class="text-nowrap">${esc(rot(e.agente))}</td>
+    <td>${esc(EVENTO[e.evento] || e.evento)}${e.n > 1 ? ` <span class="text-secondary">(${num(e.n)})</span>` : ""}</td><td class="small text-secondary texto-com">${esc(e.detalhe || "")}</td></tr>`).join("")
+    || '<tr><td colspan="4" class="text-secondary">Nenhum evento ainda.</td></tr>';
+}
 function tendencias(t) {
   const el = document.getElementById("t-tendencias"); if (!el) return;
   const ts = (t && t.temas) || [];
@@ -1114,7 +1167,7 @@ function aplicar() {
   const comparar = F.p < 90 && filtrados(1, false).length > 0;  // sem dado no período anterior a seta só repetiria o total
   kpis(filtrados(0), comparar ? filtrados(1) : [], filtrados(0, false), comparar ? filtrados(1, false) : [], comparar);
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
-  limites(dados.limites || {}); indicadores(dados.indicadores); tendencias(dados.tendencias); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
+  limites(dados.limites || {}); indicadores(dados.indicadores); tendencias(dados.tendencias); enxame(dados.enxame); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
 async function carregar() {
   try {
