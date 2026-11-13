@@ -1219,7 +1219,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
   document.documentElement.setAttribute("data-bs-theme", e.matches ? "dark" : "light");
   if (dados) { graficoDia(filtrados(0)); graficoHora(filtrados(0)); }
 });
-if (PUBLICO) document.getElementById("rodape").textContent = "Números reais do agente, atualizados a cada hora · sem links nem contas · ⌥-clique numa rede mostra só ela";
+if (PUBLICO) document.getElementById("rodape").textContent = "Números reais do agente, atualizados a cada 10 minutos · sem links nem contas · ⌥-clique numa rede mostra só ela";
 document.getElementById("atualizado").title = document.getElementById("rodape").textContent;  // o rodapé saiu para caber na tela
 carregar(); setInterval(carregar, 60000);
 </script>
