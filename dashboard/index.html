@@ -571,12 +571,12 @@
 <script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/js/jsvectormap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/maps/world.js"></script>
 <script>
-const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface", "substack", "threads", "bluesky", "tabnews"];
+const REDES = ["linkedin", "x", "instagram", "tiktok", "youtube", "facebook", "reddit", "github", "huggingface", "substack", "threads", "bluesky", "tabnews", "researchgate"];
 const NOMES = {x: "X", linkedin: "LinkedIn", instagram: "Instagram", reddit: "Reddit", youtube: "YouTube",
-  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF", substack: "Substack", threads: "Threads", bluesky: "Bluesky", tabnews: "TabNews"};
+  tiktok: "TikTok", facebook: "Facebook", github: "GitHub", huggingface: "Fórum HF", substack: "Substack", threads: "Threads", bluesky: "Bluesky", tabnews: "TabNews", researchgate: "ResearchGate"};
 // 13 cores distinguíveis entre si (as de marca repetiam azul em LinkedIn/Facebook/Bluesky e preto em X/Threads/TabNews)
 const CORES = {x: "#64748b", linkedin: "#0a66c2", instagram: "#db2777", reddit: "#f97316", youtube: "#dc2626",
-  tiktok: "#14b8a6", facebook: "#7c3aed", github: "#a8a29e", huggingface: "#eab308", substack: "#92400e", threads: "#111827", bluesky: "#38bdf8", tabnews: "#65a30d"};
+  tiktok: "#14b8a6", facebook: "#7c3aed", github: "#a8a29e", huggingface: "#eab308", substack: "#92400e", threads: "#111827", bluesky: "#38bdf8", tabnews: "#65a30d", researchgate: "#00ccbb"};
 const PLURAL = {terceiro: ["comentário", "comentários"], resposta: ["conversa", "conversas"], post: ["post próprio", "posts próprios"], video: ["vídeo", "vídeos"], dm: ["DM", "DMs"]};
 const TIPOS = {terceiro: "Comentário", resposta: "Conversa", post: "Post próprio", video: "Vídeo", dm: "DM"};
 const STATUS = {publicado: ["publicado", "green"], pendente: ["na fila", "blue"], reprovado: ["reprovado", "red"],
