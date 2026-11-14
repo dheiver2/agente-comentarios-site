@@ -132,6 +132,7 @@
 
     <div class="page-body">
       <div class="container-xl">
+        <div id="avisos" class="d-none mb-3"></div>
         <div id="alerta-llm" class="alert alert-danger d-none" role="alert">
           <b>Roteador de IA fora do ar</b>: o agente parou de escrever e comentar até ele voltar (<span></span>).
         </div>
@@ -1232,6 +1233,17 @@ function aplicar() {
   graficoDia(filtrados(0)); graficoHora(filtrados(0));
   limites(dados.limites || {}); indicadores(dados.indicadores); tendencias(dados.tendencias); enxame(dados.enxame); seguidores(dados.seguidores || []); metas(dados.seguidores || [], filtrados(0, false)); seguindo(dados.seguindo, dados.seguidores || []); autoria(dados.autoria); engajamento(dados.seguidores || []); alvos(filtrados(0, false)); grupo(); tabela();
 }
+function avisosFaixa(lista) {  // mensagens do sistema (vigia, quedas, avisos do agente): as mais novas primeiro
+  const el = document.getElementById("avisos");
+  el.classList.toggle("d-none", !lista.length);
+  const esc = t => String(t).replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+  el.innerHTML = lista.map(a => {
+    const cor = /✅/.test(a.texto) ? "success" : /⚠️|🛑|❌/.test(a.texto) ? "warning" : "info";
+    const q = new Date(a.quando * 1000);
+    return `<div class="alert alert-${cor} py-2 mb-2" role="alert"><span class="text-secondary me-2">${q.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"})} ${q.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"})}</span>${esc(a.texto).replace(/\n/g, " · ")}</div>`;
+  }).join("");
+}
+
 async function carregar() {
   try {
     dados = await (await fetch(PUBLICO ? "dados.json?" + Date.now() : "/api/performance")).json();
@@ -1241,6 +1253,7 @@ async function carregar() {
   ideiasCard(dados.ideias, dados.autoajuste);
   saude(dados.saude || {});
   if (!carregar.feito) { carregar.feito = true; mostrarPagina(); }  // 1ª carga: abre a página do link (e mede quantos itens cabem)
+  avisosFaixa(dados.avisos || []);
   const j = document.getElementById("janela"), al = document.getElementById("alerta-llm");
   if (dados.llm && !dados.llm.ok) { al.classList.remove("d-none"); al.querySelector("span").textContent = dados.llm.detalhe.slice(0, 60); }
   else al.classList.add("d-none");
