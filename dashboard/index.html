@@ -1038,7 +1038,7 @@ function indicadores(x) {
     ["Cobertura das redes", cb.total ? `${cb.acima}/${cb.total}` : "–", cb.abaixo && cb.abaixo.length ? "abaixo do piso: " + cb.abaixo.slice(0, 4).map(nome).join(", ") + (cb.abaixo.length > 4 ? "…" : "") : "todas no piso"],
     ["Teste A/B da vez", ab.ativo ? `${ab.A.engajou}/${ab.A.n} × ${ab.B.engajou}/${ab.B.n}` : (ab.adotados ? `${ab.adotados} adotados` : "–"), ab.ativo ? `${ab.ativo} · decide com ${ab.minimo} medidos por braço` : "sem teste ativo"],
     ["Tempo até medir", tm.horas_mediana == null ? "–" : vir(tm.horas_mediana) + " h", tm.n ? `mediana de ${tm.n} itens` : "começa a contar hoje"],
-    ["Curtidas dadas hoje", cu.teto ? `${cu.hoje}/${cu.teto}` : "–", "antes de comentar e de responder"],
+    ["Curtidas dadas hoje", cu.hoje ?? "–", "antes de comentar e de responder"],
     ["Verificação em espera", num(es.n || 0), "itens parados por busca bloqueada ou roteador lento"]];
   document.getElementById("t-operacao").innerHTML = blocos.map(([t, v, sub]) =>
     `<div class="col-6 col-lg-2"><div class="subheader">${t}</div><div class="h2 mb-0">${v}</div><div class="text-secondary small mt-1">${esc(sub)}</div></div>`).join("");
