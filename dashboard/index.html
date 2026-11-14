@@ -67,6 +67,12 @@
     #avisos .alert { font-size: .8125rem; }
     .card-body { padding: .85rem; }
   }
+  .f-extra { display: none; }
+  .filtros-abertos .f-extra { display: block; }
+  .table-vcenter tbody tr:hover, .card-table tbody tr:hover { background: rgba(var(--tblr-primary-rgb), .05); }
+  .card-table thead th { font-size: .6875rem; letter-spacing: .03em; }
+  .card-title { font-size: .95rem; }
+  .pg-itens .f-extra { display: block; } .pg-itens .f-mais-col { display: none; }
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 </style>
 </head>
@@ -129,24 +135,27 @@
               <button type="button" class="btn btn-sm" data-p="90">90 dias</button>
             </div>
           </div>
-          <div class="col-6 col-md-3 col-lg-2">
+          <div class="col-auto f-mais-col">
+            <button type="button" class="btn btn-sm" id="f-mais" aria-expanded="false" aria-controls="f-tipo">Mais filtros <span class="badge bg-primary-lt ms-1 d-none" id="f-mais-n"></span></button>
+          </div>
+          <div class="col-6 col-md-3 col-lg-2 f-extra">
             <select class="form-select form-select-sm" id="f-tipo" aria-label="Tipo">
               <option value="">Todos os tipos</option><option value="terceiro">Comentários</option><option value="resposta">Conversas</option>
               <option value="post">Posts próprios</option><option value="video">Vídeos</option><option value="dm">DMs</option>
             </select>
           </div>
-          <div class="col-6 col-md-3 col-lg-2">
+          <div class="col-6 col-md-3 col-lg-2 f-extra">
             <select class="form-select form-select-sm" id="f-origem" aria-label="Origem">
               <option value="">Toda origem</option><option value="turno">Turno</option><option value="radar">Radar</option><option value="conversa">Conversa</option>
             </select>
           </div>
-          <div class="col-6 col-md-3 col-lg-2">
+          <div class="col-6 col-md-3 col-lg-2 f-extra">
             <select class="form-select form-select-sm" id="f-status" aria-label="Status">
               <option value="publicado">Publicados</option><option value="">Todos os status</option><option value="pendente">Na fila</option>
               <option value="reprovado">Reprovados</option><option value="ignorado">Descartados</option><option value="erro">Com erro</option>
             </select>
           </div>
-          <div class="col-6 col-md-3 col-lg">
+          <div class="col-6 col-md-3 col-lg f-extra">
             <input type="search" class="form-control form-control-sm" id="f-busca" placeholder="Buscar no texto…" aria-label="Buscar no texto">
           </div>
           <div class="col-12 d-flex flex-wrap gap-2 align-items-center" id="f-redes"></div>
@@ -156,7 +165,7 @@
 
     <div class="page-body">
       <div class="container-xl">
-        <div id="avisos" class="d-none mb-3"></div>
+        <div id="avisos" class="d-none mb-3" role="status" aria-live="polite"></div>
         <div id="alerta-llm" class="alert alert-danger d-none" role="alert">
           <b>Roteador de IA fora do ar</b>: o agente parou de escrever e comentar até ele voltar (<span></span>).
         </div>
@@ -635,6 +644,7 @@ function mostrarPagina() {
   document.getElementById("titulo-pagina").textContent = ROTULOS[pg];
   document.querySelector(".filtros").classList.toggle("d-none", pg === "sobre" || pg === "enxame");  // a explicação não depende de filtro
   document.querySelector("#paginas .active")?.scrollIntoView({inline: "center", block: "nearest"});  // a aba atual fica visível na faixa
+  document.body.classList.toggle("pg-itens", pg === "itens");  // Itens mostra todos os filtros; nas outras abas ficam em "Mais filtros"
   scrollTo(0, 0);
   dispatchEvent(new Event("resize"));  // gráficos que estavam escondidos se redesenham com a largura certa
   if (dados) requestAnimationFrame(() => {  // ApexCharts desenhado com a aba escondida fica em branco: refaz ao mostrar
@@ -744,7 +754,13 @@ function sincronizarControles() {
   document.getElementById("f-origem").value = F.origem;
   document.getElementById("f-status").value = F.status;
   const b = document.getElementById("f-busca"); if (document.activeElement !== b) b.value = F.q;
+  const n = (F.tipo ? 1 : 0) + (F.origem ? 1 : 0) + (F.status !== "publicado" ? 1 : 0) + (F.q ? 1 : 0);  // filtros avançados ativos
+  const bn = document.getElementById("f-mais-n"); bn.textContent = n; bn.classList.toggle("d-none", !n);
+  if (n) document.body.classList.add("filtros-abertos");
 }
+document.getElementById("f-mais").addEventListener("click", e => {
+  const on = document.body.classList.toggle("filtros-abertos"); e.currentTarget.setAttribute("aria-expanded", on);
+});
 
 // ---------- números ----------
 const soma = (l, k) => l.reduce((s, i) => s + (i[k] || 0), 0);
@@ -806,7 +822,7 @@ function graficoHora(l) {
   const opt = {chart: {type: "line", height: 240, toolbar: {show: false}, fontFamily: "inherit", background: "transparent", foreColor: corTexto(), animations: {enabled: false}},
     theme: {mode: escuro() ? "dark" : "light"}, colors: ["#E94A12", escuro() ? "#cfd3da" : "#1d273b"], stroke: {width: [0, 2], curve: "smooth"},
     series: [{name: "Publicados", type: "column", data: horas.map(h => daHora(h).length)}, {name: "Engajamento médio", type: "line", data: horas.map(med)}],
-    xaxis: {categories: horas.map(h => h + "h")}, dataLabels: {enabled: false}, grid: {strokeDashArray: 4, borderColor: corGrade()},
+    xaxis: {categories: horas, labels: {rotate: 0, hideOverlappingLabels: true, formatter: v => (+v % 3 === 1 ? v + "h" : "")}, tickPlacement: "on"}, dataLabels: {enabled: false}, grid: {strokeDashArray: 4, borderColor: corGrade()},
     plotOptions: {bar: {columnWidth: "55%", borderRadius: 2}}, legend: {position: "bottom"}, tooltip: {theme: escuro() ? "dark" : "light"},
     yaxis: [{labels: {formatter: v => Math.round(v)}}, {opposite: true, labels: {formatter: v => v === null || v === undefined ? "" : v.toFixed(1)}}]};
   if (gHora) gHora.updateOptions(opt, true, false); else (gHora = new ApexCharts(document.getElementById("g-hora"), opt)).render();
@@ -856,7 +872,7 @@ function alvos(l) {
     .filter((i, k, arr) => !i.autor_celebre || arr.findIndex(j => j.autor_celebre === i.autor_celebre) === k).slice(0, 8);
   const refs = new Set(com.filter(i => i.autor_celebre).map(i => i.autor_celebre));
   document.getElementById("t-maiores-nota").textContent = `só pessoas · ${refs.size} ${refs.size === 1 ? "referência" : "referências"} de IA no Brasil comentadas (em negrito)`;
-  document.getElementById("t-maiores").innerHTML = maiores.map(i => `<tr><td class="text-nowrap">${ponto(i.rede)}${i.autor_celebre ? '<strong>' + esc(i.autor_celebre) + '</strong>' : i.autor ? esc(i.autor) : nome(i.rede)}</td>
+  document.getElementById("t-maiores").innerHTML = maiores.map(i => `<tr><td class="text-nowrap">${ponto(i.rede)}${i.autor_celebre ? '<strong>' + esc(i.autor_celebre) + '</strong>' : i.autor ? esc(i.autor) : "perfil no " + nome(i.rede)}</td>
     <td class="text-end">${compacto(i.autor_seguidores)}</td><td class="text-end">${compacto(i.post_views || i.post_interacoes)}</td></tr>`).join("")
     || '<tr><td colspan="3" class="vazio">Ainda lendo os perfis dos autores.</td></tr>';
 }
@@ -993,7 +1009,7 @@ function saude(sd) {
   if (na.pct7 !== null && na.pct7 !== undefined) {
     b.classList.remove("d-none");
     b.className = "badge " + (na.pct7 >= 95 ? "bg-green-lt" : na.pct7 >= 80 ? "bg-orange-lt" : "bg-red-lt");
-    b.textContent = `disponível ${String(na.pct7).replace(".", ",")}%`;  // nos últimos 7 dias (detalhe no title)
+    b.textContent = `no ar ${String(na.pct7).replace(".", ",")}% · 7 d`;  // nos últimos 7 dias (detalhe no title)
     b.title = "Blocos de 5 min da janela de publicação em que o agente estava rodando. Meta do nível 3: 95 %. 30 dias: " + (na.pct30 ?? "–") + " %";
   }
   const e = sd.ensaio || {}, be = document.getElementById("b-ensaio");
@@ -1037,7 +1053,7 @@ function metas(s, l) {
   document.getElementById("t-metas").innerHTML = REDES.filter(r => F.redes.has(r)).map(r => {
     const serie = s.filter(x => x.rede === r && x.dia >= desde), d = serie.length >= 2 ? serie[serie.length - 1].valor - serie[0].valor : null;
     const p = pub.filter(i => i.rede === r), n = p.length, inter = engaj(p), pd = p.filter(i => i.tipo === "terceiro").length / dias;
-    const sit = n === 0 ? ["parada", "red"] : pd < 2 ? ["abaixo do piso", "orange"] : (d > 0 || inter > 0) ? ["crescendo", "green"] : ["sem retorno ainda", "secondary"];
+    const sit = n === 0 ? ["parada", "red"] : pd < 2 ? ["abaixo do piso", "secondary"] : (d > 0 || inter > 0) ? ["crescendo", "green"] : ["sem retorno ainda", "secondary"];
     return `<tr><td class="text-nowrap" data-ir="itens" data-rede="${r}" style="cursor:pointer" title="Ver os itens desta rede">${ponto(r)}${nome(r)}</td><td class="text-secondary">${META[r] || "seguidores"}</td>
       <td class="text-end">${d === null ? '<span class="text-secondary">–</span>' : `<span class="${d > 0 ? "text-green" : d < 0 ? "text-red" : "text-secondary"}">${d > 0 ? "+" : ""}${num(d)}</span>`}</td>
       <td class="text-end">${num(n)}</td><td class="text-end">${pd.toFixed(1).replace(".", ",")}</td><td class="text-end">${num(inter)}</td>
